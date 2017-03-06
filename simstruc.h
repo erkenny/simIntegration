@@ -1,7 +1,7 @@
 /*
- * Copyright 1990-2007 The MathWorks, Inc.
+ * Copyright 1990-2008 The MathWorks, Inc.
  *
- * File: simstruc.h     $Revision: 1.1.6.1 $
+ * File: simstruc.h     $Revision: 1.269.4.78 $
  *
  * Abstract:
  *      Data structures and access methods for S-functions.
@@ -50,6 +50,9 @@
 #ifndef __SIMSTRUC__
 #define __SIMSTRUC__
 
+#ifdef __cplusplus
+extern "C"
+#endif
 
 /*===========================================================================*
  * BEGIN SECTION
@@ -60,7 +63,7 @@
  * and in what mode.
  *
  * This section list all the key #define macros controlling the inclusion/
- * exclusion of features, defintions, etc.
+ * exclusion of features, definitions, etc.
  *
  * Typically, this section only assigns a default value (such as false).
  * The final value is adjusted in a subsequent section.
@@ -70,13 +73,13 @@
  * MODE: SINGLE-TASKING OR MULTI-TASKING
  */
 #define SS_MULTITASKING (0)
- 
+
 /*=======================================================*
  * MODE: SIMULATION OR GENERATED CODE
- * 
+ *
  * The following #defines determine whether the simstruc is used in "normal"
  * Simulink simulation or in Real Time Workshop generated code.
- *  
+ *
  * This is designed to be a mutually exclusive set.
  * One and only one should be defined to be true.
  */
@@ -85,7 +88,7 @@
 
 /*=======================================================*
  * MODE: WHO IS USING THE SIMSTRUC
- * 
+ *
  * The following #defines determine "who" is using the simstruc.
  *
  * This is designed to be a mutually exclusive set.
@@ -100,7 +103,7 @@
 
 /*=======================================================*
  * MODE: GENERATED CODE IS REAL-TIME OR NON-REAL-TIME
- * 
+ *
  * Both can be false, but both can't be true
  */
 #define SS_RT  (0)
@@ -115,11 +118,6 @@
  * MODE: ENVIRONMENT HAS STANDARD IO AVAILABLE
  */
 #define SS_HAVESTDIO (0)
-
-/*=======================================================*
- * CONTEXT STORE AND RESTORE METHODS ARE AVAILABLE
- */
-#define SS_HAVESIMULATIONCONTEXTIO (0)
 
 /*=======================================================*
  * MODE: TID_EQUALS_SAMPLE_TIME_INDEX -
@@ -206,7 +204,7 @@
 
 #if defined(RTW_GENERATED_S_FUNCTION)
   /*
-   * Used by RTW Generated S Function, ex  s-fcn target.  
+   * Used by RTW Generated S Function, ex  s-fcn target.
    * This flag is independent of how the
    * s-function is built (i.e., it is a #define in the code, not a build
    * flag).  It is true when building the s-function for use with simulink and
@@ -216,7 +214,7 @@
 # define SS_GENERATED_S_FUNCTION (1)
 
 #elif S_FUNCTION_LEVEL == 1
-  /* 
+  /*
    * Used with any LEVEL 1 s-function (user written) including:
    *  o build for use with a normal simulation (via mex command)
    *  o build for use with rtw (grt)
@@ -237,10 +235,10 @@
   /*
    * Used internally by Simulink (simulink.dll).
    */
-# undef  SS_SL_INTERNAL 
+# undef  SS_SL_INTERNAL
 # define SS_SL_INTERNAL    (1)
 
-#elif defined(RT) || defined(NRT) 
+#elif defined(RT) || defined(NRT)
   /*
    * Used in "root" model of generated code, but not in
    * non-inlined, s-functions being compiled for use with the
@@ -252,15 +250,15 @@
 
 #elif defined(FIPXT_SHARED_MODULE)
   /*
-   * Used in shared module (such as a dll) that needs to be able to 
+   * Used in shared module (such as a dll) that needs to be able to
    * use some feature of the simstruc.
    */
 /*
  * Currently, shared module will be treated as if they are
  * normal sfunctions.
  *
-# undef  SS_SHARED_MODULE 
-# define SS_SHARED_MODULE  (1) 
+# undef  SS_SHARED_MODULE
+# define SS_SHARED_MODULE  (1)
 */
 # undef  SS_SFCN_NORMAL
 # define SS_SFCN_NORMAL    (1)
@@ -272,8 +270,8 @@
  * Currently, plain mex functions will be treated as if they are
  * normal sfunctions.
  *
-# undef  SS_MEX 
-# define SS_MEX  (1) 
+# undef  SS_MEX
+# define SS_MEX  (1)
 */
 # undef  SS_SFCN_NORMAL
 # define SS_SFCN_NORMAL    (1)
@@ -311,14 +309,6 @@
 #endif
 
 /*=======================================================*
- * Determine => MODE: SIMULATION CONTEXT IO AVAILABLE
- */
-#if defined(HAVESIMULATIONCONTEXTIO)
-# undef  SS_HAVESIMULATIONCONTEXTIO
-# define SS_HAVESIMULATIONCONTEXTIO (1)
-#endif
-
-/*=======================================================*
  * Determine => MODE: TID_EQUALS_SAMPLE_TIME_INDEX -
  */
 #if SS_SL_INTERNAL
@@ -350,7 +340,7 @@
  * DETERMINE FINAL VALUES OF KEY DEFINES CONTROLLING CONDITIONAL COMPILATION
  *===========================================================================*/
 
- 
+
 /*===========================================================================*
  * BEGIN SECTION
  * CHECK PROPER USAGE
@@ -472,11 +462,11 @@
 # include "rt_matrx.h" /* S-function is being used with Real-Time Workshop */
 #elif SS_RTW_INTERNAL
   /*
-   * Run-time interface for Real-Time Workshop 
+   * Run-time interface for Real-Time Workshop
    */
 # if !defined(TYPEDEF_MX_ARRAY)
 #  define TYPEDEF_MX_ARRAY
-    typedef real_T mxArray; 
+    typedef real_T mxArray;
 # endif
 #else
   /*
@@ -492,7 +482,7 @@
  * WARNING: For maintainability:
  *
  * Conditional Compilation below this point should only depend on
- *    KEY DEFINES 
+ *    KEY DEFINES
  * or
  *    GROUP DEFINES
  * that where determined in the sections above.
@@ -500,10 +490,10 @@
  * In particular, #if and #elif should only depend on the KEY DEFINES and/or
  * GROUP DEFINES.
  *
- * All the KEY DEFINES and GROUP DEFINES always have definitions.  Therefore, 
+ * All the KEY DEFINES and GROUP DEFINES always have definitions.  Therefore,
  * the preprocessor directives defined(), #ifdef, and #ifndef are not needed
  * below, and their use indicates a likely maintainability problem.  The
- * only exception is the use of #ifndef in the standard technique for guarding 
+ * only exception is the use of #ifndef in the standard technique for guarding
  * against multiple inclusion and multiple definition.
  *===========================================================================*
  *===========================================================================*
@@ -594,7 +584,7 @@
 #define TRIGGERED_TID           (-1)
 #define CONSTANT_TID            (-2)
 #define GENERIC_ASYNC_TID       (-3)
-        
+
 #define OVERWRITE_INPUT_ANY     (-2)
 #define OVERWRITE_INPUT_NONE    (-1)
 
@@ -621,12 +611,12 @@ typedef enum {
 /*
  * Dimensions mode
  * S-function ports can have the following three dimensions modes:
- * 1) INHERIT_DIMS_MODE  
+ * 1) INHERIT_DIMS_MODE
  *    - Dimensions mode depends on settings of the connected ports;
  *    - Ports cannot have INHERIT_DIMS_MODE after model compile;
- * 2) FIXED_DIMS_MODE    
+ * 2) FIXED_DIMS_MODE
  *    - Signal dimensions are fixed during simulation;
- * 3) VARIABLE_DIMS_MODE 
+ * 3) VARIABLE_DIMS_MODE
  *    - Signal dimensions are allowed to change during simulation.
  */
 typedef enum {
@@ -666,8 +656,8 @@ typedef enum {
 } BDErrorValue;
 
 /*==========================================================================*
- * PropagationPassType - used to distinguish for pass intialization
- * If you add or update PropagationPassType, update sl_types_compile.h too
+ * PropagationPassType - used to distinguish for pass initialization
+ * If you add or update PropagationPassType, update simulink/sl_types_compile.hpp too
  *==========================================================================*/
 #ifndef _PROPAGATIONPASSTYPE
 # define _PROPAGATIONPASSTYPE
@@ -702,7 +692,7 @@ typedef enum {
  */
 #define NEG1_2BITS '\x03'
 #define CONV_BITS2INT(val) \
-          ( (((val) & 2U) != 0) ? FRAME_INHERITED : ((int)(val)) )
+          ( (((val) & 2U) != 0U) ? FRAME_INHERITED : (((val) & 1U) != 0U) ? FRAME_YES : FRAME_NO )
 #define CONV_INT2BITS(val) \
           ( ((val) == FRAME_INHERITED) ? (NEG1_2BITS) : ((val) & 1U) )
 
@@ -710,7 +700,7 @@ typedef enum {
  * Conversion routines for dimensions mode storage
  */
 #define CONV_BITS2DIMSMODE(val) \
-          ( (((val) & 2U) != 0) ? INHERIT_DIMS_MODE : ((int)(val)) )
+          ( (((val) & 2U) != 0) ? INHERIT_DIMS_MODE : (((val) & 1U) != 0U) ? VARIABLE_DIMS_MODE : FIXED_DIMS_MODE )
 #define CONV_DIMSMODE2BITS(val) \
           ( ((val) == INHERIT_DIMS_MODE) ? (NEG1_2BITS) : ((val) & 1U) )
 
@@ -718,7 +708,7 @@ typedef enum {
  * Conversion routines for bus mode storage
  */
 #define CONV_BITS2BUSMODE(val) \
-          ( (((val) & 2U) != 0) ? SL_INHERIT_BUS_MODE : ((int)(val)) )
+          ( (((val) & 2U) != 0) ? SL_INHERIT_BUS_MODE : (((val) & 1U) != 0U) ? SL_BUS_MODE : SL_NON_BUS_MODE )
 #define CONV_BUSMODE2BITS(val) \
           ( ((val) == SL_INHERIT_BUS_MODE) ? (NEG1_2BITS) : ((val) & 1U) )
 
@@ -763,12 +753,15 @@ typedef enum {
 # define SS_CALL_MDL_RTWCG                            135
 # define SS_CALL_MDL_MASSMATRIX                       136
 # define SS_CALL_MDL_FORCINGFUNCTION                  137
-# define SS_CALL_MDL_SIMULATIONCONTEXTIO              138
+/*       UNSUSED                                      138 */
 # define SS_CALL_MDL_ENABLE                           139
 # define SS_CALL_MDL_DISABLE                          140
 # define SS_CALL_MDL_SIM_STATUS_CHANGE                141
 # define SS_CALL_MDL_INITIALIZE_PROPAGATION_PASS      142
-
+# define SS_CALL_MDL_CONSTRAINTS                      143
+# define SS_CALL_MDL_GET_SIM_STATE                    144
+# define SS_CALL_MDL_SET_SIM_STATE                    145
+# define SS_CALL_MDL_INIT_SYSTEM_MATRICES             146
 #endif
 
 /*=================================================================*
@@ -965,16 +958,20 @@ struct _ssSizes {
       unsigned int explicitFCSSCtrl:    1; /* used for explicit fcncall orig */
 
       unsigned int modelRefTsInhSupLevel: 2; /* used for determining if a model
-                                             * can inherit a sample time when it 
+                                             * can inherit a sample time when it
                                              * is used as a block*/
       unsigned int needElapseTime:       1;
       unsigned int hasSubFunctions:      1;
-      unsigned int callsOutputInInit:    1;  
+      unsigned int callsOutputInInit:    1;
       /* mdlProjection may be present, but we may not want to call it */
-      unsigned int disableMdlProjection: 1; 
+      unsigned int disableMdlProjection: 1;
 
-      /* prevent lint warning about bit fields greater than 16 bits */      
-      unsigned int reserved15:          15; /* remainder are reserved        */
+      unsigned int modelRefNormalModeSupport: 2;
+      unsigned int simStateCompliance: 4;
+      unsigned int simStateVisibility: 1;
+
+      /* prevent lint warning about bit fields greater than 16 bits */
+      unsigned int reserved:          8; /* remainder are reserved        */
   } flags;
 
   int_T numJacobianNzMax;  /* number of nonzero elements in sparse Jacobian  */
@@ -1063,10 +1060,11 @@ typedef enum {
     SS_DWORK_ORIGINATED_AS_RWORK,
     SS_DWORK_ORIGINATED_AS_IWORK,
     SS_DWORK_ORIGINATED_AS_PWORK,
-    SS_DWORK_ORIGINATED_AS_DSTATE
+    SS_DWORK_ORIGINATED_AS_DSTATE,
+    SS_DWORK_ORIGINATED_AS_MASS_MATRIX_OFFSET
 } ssDWorkOriginType;
 
-#define SS_NUM_DWORK_ORIGIN_TYPES   6
+#define SS_NUM_DWORK_ORIGIN_TYPES   7
 
 /*
  * Auxiliary DWork structure for S-Functions, one for each dwork.
@@ -1084,14 +1082,16 @@ struct _ssDWorkAuxRecord {
                                   * 1U: Must resolve
                                   * 2U: Must not resolve */
         unsigned int rtwIdDoneResolve:       1; /* done resolving identifier */
-        unsigned int reserved11:            11; /* remainder are reserved    */
+        unsigned int ensureResetForSizeVary: 1; /* ensure reset for size change */
+        unsigned int reserved10:            10; /* remainder are reserved    */
         unsigned int reserved16:            16; /* remainder are reserved  */
     } flags;
     int_T            icPrmIdxPlus1;             /* block IC parameter (if
                                                  * there is) mapped to this
                                                  * dwork; 0 for none
                                                  */
-    int_T            unusedInts[3];
+    int_T            bitFieldWidth;
+    int_T            unusedInts[2];
 
     void             *voidStateUdi;             /* resolved object           */
     void             *unusedPtrs[3];
@@ -1141,7 +1141,8 @@ struct _ssPortInputs {
         unsigned int nonDerivPort       :  1;
         unsigned int dimensionsMode     :  2;
         unsigned int busMode            :  2;
-        unsigned int reserved2          :  2;
+        unsigned int optimizeInIR       :  1;
+        unsigned int reserved1          :  1;
         unsigned int reserved16         :  16;
     } attributes;
 
@@ -1177,7 +1178,8 @@ struct _ssPortOutputs {
         unsigned int dimensionsMode  :  2;
         unsigned int fedByBlockWithModesNoZCs : 1;
         unsigned int busMode         :  2;
-        unsigned int reserved14      : 14;
+        unsigned int optimizeInIR    :  1;
+        unsigned int reserved13      : 13;
     } attributes;
 
     real_T         sampleTime;          /* Sample and offset time when   */
@@ -1248,7 +1250,7 @@ typedef struct ssParamRec_tag {
                                 */
     int_T      nDimensions;    /* Number of dimensions for this parameter     */
     int_T      *dimensions;    /* Array giving the dimension (sizes) of
-                                * the paramter                                */
+                                * the parameter                                */
     DTypeId    dataTypeId;     /* For built-in data types, see BuiltInDTypeId
                                 * in simstruc_types.h                         */
     boolean_T  complexSignal;  /* FALSE or TRUE                               */
@@ -1316,7 +1318,7 @@ typedef struct ssContextMemoryInfo_tag {
 } ssContextMemoryInfo;
 
 typedef enum {
-    SS_PRM_NOT_TUNABLE  = 0, 
+    SS_PRM_NOT_TUNABLE  = 0,
     SS_PRM_TUNABLE,
     SS_PRM_SIM_ONLY_TUNABLE
 } ssParamTunability;
@@ -1360,6 +1362,11 @@ struct _ssWork {
   void                      *reservedForFuture[1];
 };
 
+#define SS_SL_ZCS_TYPE_CONT   0
+#define SS_SL_ZCS_TYPE_DISC   1
+#define SS_SL_ZCS_TYPE_HYBRID 2
+
+
 /*
  * structure to hold info on zero-crossing signals
  */
@@ -1368,7 +1375,8 @@ typedef struct {
     ZCType        zcType;
     boolean_T     needsEvent;
     void          *reservedPtrs[16];
-    int_T         reserved[16];
+    int_T         zcSignalType;
+    int_T         reserved[15];
 } ssZeroCrossingInfo;
 
 /*
@@ -1398,14 +1406,14 @@ struct _ssPortInfo2 {
 };
 
 /*
- * The _ssBlkInfo structure can by used by S-function blocks to determine
+ * The _ssBlkInfo structure can be used by S-function blocks to determine
  * status about the model in which they reside.
  */
 struct _ssBlkInfo2 {
   void  *rtwSfcnInfo;   /* Used only in RTW by the S-function     */
   ssZeroCrossingInfo *zeroCrossingInfo;
   struct _ssPortInfo2 *portInfo2;
-  void  *reservedPtrs[14];  
+  void  *reservedPtrs[14];
   int_T reserved[16];
 };
 
@@ -1423,7 +1431,6 @@ struct _ssBlkInfo {
 
   int_T        absTolOffset;     /* Offset from the root SimStruct absTol     */
   int_T        reservedForFutureInt;
-
 };
 
 /*==================================================================*
@@ -1454,8 +1461,8 @@ typedef enum {
     GEN_FCN_IS_RTPARAM_TUNABLE,
     GEN_FCN_GET_BLOCK_HANDLE,
     GEN_FCN_REGISTER_DATA_STORE_FROM_NAME,
-    GEN_FCN_READ_FROM_DATA_STORE, 
-    GEN_FCN_WRITE_TO_DATA_STORE, 
+    GEN_FCN_READ_FROM_DATA_STORE,
+    GEN_FCN_WRITE_TO_DATA_STORE,
     GEN_FCN_REGISTER_NUM_DATA_STORE,
     GEN_FCN_COMPUTE_INPUT,
     GEN_FCN_GET_DATATYPEOVERRIDE,
@@ -1540,7 +1547,7 @@ typedef enum {
     GEN_FCN_SET_INPUT_DIMS_MODE,
     GEN_FCN_SET_OUTPUT_DIMS_MODE,
     GEN_FCN_REG_SET_INPUT_DIMS_MODE_MTH,
-    GEN_FCN_READ_FROM_DATA_STORE_ELEM, 
+    GEN_FCN_READ_FROM_DATA_STORE_ELEM,
     GEN_FCN_WRITE_TO_DATA_STORE_ELEM,
     GEN_FCN_GET_DATA_STORE_INFO,
     GEN_FCN_MODELREF_SET_FUNDAMENTAL_SAMPLE_TIME_INFO,
@@ -1563,10 +1570,39 @@ typedef enum {
     GEN_FCN_SET_INPUT_BUS_MODE,
     GEN_FCN_SET_OUTPUT_BUS_MODE,
     GEN_FCN_REG_SET_INPUT_BUS_MODE_MTH,
-    GEN_FCN_REG_MDLREF_DWORK_TYPE
+    GEN_FCN_REG_MDLREF_DWORK_TYPE,
+    GEN_FCN_PRUN_TRAILING_DIMS,
+    GEN_FCN_SET_SIGS_ALLOW_BIG_LONG,
+    GEN_FCN_GET_MDLREF_TYPE,
+    GEN_FCN_SET_MODELREF_INPUT_SIGNAL_DESIGN_MIN,
+    GEN_FCN_SET_MODELREF_INPUT_SIGNAL_DESIGN_MAX,
+    GEN_FCN_SET_MODELREF_OUTPUT_SIGNAL_DESIGN_MIN,
+    GEN_FCN_SET_MODELREF_OUTPUT_SIGNAL_DESIGN_MAX,
+    GEN_FCN_SET_JACOBIAN_FLAG,
+    GEN_FCN_SET_OUTPUT_PORT_DISCRETE_VALUED_OUTPUT,
+    GEN_FCN_SET_OUTPUT_IC_ATTRIBUTES,
+    GEN_FCN_SET_MODELREF_CONSISTENT_OUTPORT_INIT,
+    GEN_FCN_SET_SUPPORT_RUNTIME_MODEL_API,
+    GEN_FCN_SET_SUPPORT_DATATYPE_BEYOND_32_BITS_IN_RTW,
+    GEN_FCN_SET_FXPU32_BITREGION_COMPLIANT,
+    GEN_FCN_GET_FXPU32_BITREGION_COMPLIANT,
+    GEN_FCN_SET_COMP_VARSIZE_COMPUTE_TYPE,
+    GEN_FCN_ADD_DIMS_DEPEND_RULE,
+    GEN_FCN_GET_TIME_RESOLUTION,
+    GEN_FCN_GET_RTWCG_SUPPORT,
+    GEN_FCN_SET_ARRAYSCOPE_TO_LOCAL,
+    GEN_FCN_ADD_VARDIMS_RUNTIME_CHECKER,
+    GEN_FCN_SET_ASYNC_TASK_PRIORITIES_EL,
+    GEN_FCN_SET_ASYNC_TIMER_RESOLUTION_EL,
+    GEN_FCN_SET_ASYNC_TIMER_DATA_TYPE_EL,
+    GEN_FCN_SET_TIME_SOURCE_EL,
+    GEN_FCN_SET_MODELREF_OUTPUT_BIO_UPDATED_IN_ANOTHER_CTX,
+    GEN_FCN_REG_MODELREF_SET_DIMS_DEPEND_RULES,
+    GEN_FCN_REG_MODELREF_FINALIZE_DIMS_MTH,
+    GEN_FCN_REGISTER_DATA_MIN_MAX_PRM_INDICES,
+    GEN_FCN_CHECK_DWORK_RANGE,
+    GEN_FCN_ACCEL_CALL_SET_DIMS
 } GenFcnType;
-
-
 
 #if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
   /* following return 1 on success and 0 on failure */
@@ -1709,7 +1745,10 @@ typedef enum {
     GEN_DTA_INT_PROP_IS_BUS,
     GEN_DTA_INT_PROP_IS_ENUMTYPE,
     GEN_DTA_INT_PROP_ENUMTYPE_NUMSTRINGS,
-    GEN_DTA_INT_PROP_ENUMTYPE_GROUNDVALUE
+    GEN_DTA_INT_PROP_ENUMTYPE_INDEX_OF_DEFAULT,
+    GEN_DTA_INT_PROP_ENUMTYPE_ADD_TYPENAME_AS_PREFIX,
+    GEN_DTA_INT_PROP_IS_BUS_WITH_VARDIMS_ELEMENT,
+    GEN_DTA_INT_PROP_VARDIMS_SIZE
 } GenDTAIntPropType;
 
 typedef enum {
@@ -1718,7 +1757,9 @@ typedef enum {
     GEN_DTA_INT_PROP_ELEMENT_NUM_DIMENSIONS,
     GEN_DTA_INT_PROP_ELEMENT_OFFSET,
     GEN_DTA_INT_PROP_ENUMTYPE_INDEX_FROM_VALUE,
-    GEN_DTA_INT_PROP_ENUMTYPE_VALUE_FROM_INDEX
+    GEN_DTA_INT_PROP_ENUMTYPE_VALUE_FROM_INDEX,
+    GEN_DTA_INT_PROP_ELEMENT_DIMENSIONS_MODE,
+    GEN_DTA_INT_PROP_ELEMENT_VARDIMS_OFFSET
 } GenDTAIntElemPropType;
 
 typedef enum {
@@ -1726,8 +1767,7 @@ typedef enum {
     GEN_DTA_VOID_PROP_ZERO,
     GEN_DTA_VOID_PROP_PROPERTIES,
     GEN_DTA_VOID_PROP_OBJECT,
-    GEN_DTA_VOID_PROP_CGTYPE,
-    GEN_DTA_VOID_PROP_ENUMTYPE_DEFAULTSTRING
+    GEN_DTA_VOID_PROP_CGTYPE
 } GenDTAVoidPropType;
 
 typedef enum {
@@ -1756,7 +1796,7 @@ typedef enum {
     GEN_DTA_PARAMETER_UNDERFLOW
 } GenDTADiagnosticType;
 
-typedef struct slErrMsgQueue* (*RegisterDataTypeWithCheck) (void *, const char_T *, const char_T *, DTypeId *);
+typedef void * (*RegisterDataTypeWithCheck) (void *, const char_T *, const char_T *, DTypeId *);
 
 typedef DTypeId (*RegisterDataType) (void *, const char_T *, const char_T *);
 
@@ -1764,62 +1804,62 @@ typedef int_T (*GetNumDataTypes) (void *);
 
 typedef DTypeId (*GetDataTypeId) (void *, const char_T *);
 
-typedef int_T (*GetGenericDTAIntProp) (void *, const char_T *, DTypeId, 
+typedef int_T (*GetGenericDTAIntProp) (void *, const char_T *, DTypeId,
                                        GenDTAIntPropType);
 typedef int_T (*SetGenericDTAIntProp) (void *, const char_T *, DTypeId, int_T,
                                        GenDTAIntPropType);
-typedef int_T (*GetGenericDTAIntElemProp) (void *, const char_T *, DTypeId, 
+typedef int_T (*GetGenericDTAIntElemProp) (void *, const char_T *, DTypeId,
                                            int_T, GenDTAIntElemPropType);
-typedef int_T (*SetGenericDTAIntElemProp) (void *, const char_T *, DTypeId, 
+typedef int_T (*SetGenericDTAIntElemProp) (void *, const char_T *, DTypeId,
                                            int_T, int_T, GenDTAIntElemPropType);
 
-typedef const void* (*GetGenericDTAVoidProp) (void *, const char_T *, DTypeId, 
+typedef const void* (*GetGenericDTAVoidProp) (void *, const char_T *, DTypeId,
                                               GenDTAVoidPropType);
-typedef int_T (*SetGenericDTAVoidProp) (void *, const char_T *, DTypeId, 
+typedef int_T (*SetGenericDTAVoidProp) (void *, const char_T *, DTypeId,
                                         const void *, GenDTAVoidPropType);
-typedef const void* (*GetGenericDTAVoidElemProp) (void *, const char_T *, 
-                                                  DTypeId, int_T, 
+typedef const void* (*GetGenericDTAVoidElemProp) (void *, const char_T *,
+                                                  DTypeId, int_T,
                                                   GenDTAVoidElemPropType);
-typedef int_T (*SetGenericDTAVoidElemProp) (void *, const char_T *, DTypeId, 
+typedef int_T (*SetGenericDTAVoidElemProp) (void *, const char_T *, DTypeId,
                                  int_T, const void *, GenDTAVoidElemPropType);
 
-typedef int_T (*ConvertBetweenFcn) (slDataTypeAccess *, const char_T *, 
-                                    DTypeId, DTypeId, int_T, const void *, 
+typedef int_T (*ConvertBetweenFcn) (slDataTypeAccess *, const char_T *,
+                                    DTypeId, DTypeId, int_T, const void *,
                                     const void *, void *);
-typedef ConvertBetweenFcn (*GetConvertBetweenFcn) (void *, const char_T *, 
+typedef ConvertBetweenFcn (*GetConvertBetweenFcn) (void *, const char_T *,
                                                    DTypeId);
-typedef int_T (*SetConvertBetweenFcn) (void *, const char_T *, DTypeId, 
+typedef int_T (*SetConvertBetweenFcn) (void *, const char_T *, DTypeId,
                                        ConvertBetweenFcn);
 
-typedef int_T (*GenericDTAUnaryFcn) (slDataTypeAccess *, const char_T *, 
-                                     DTypeId, int_T, const void *, 
+typedef int_T (*GenericDTAUnaryFcn) (slDataTypeAccess *, const char_T *,
+                                     DTypeId, int_T, const void *,
                                      const void *, void *);
-typedef GenericDTAUnaryFcn (*GetGenericDTAUnaryFcnGW) (void *, const char_T *, 
-                                                       DTypeId, 
+typedef GenericDTAUnaryFcn (*GetGenericDTAUnaryFcnGW) (void *, const char_T *,
+                                                       DTypeId,
                                                        GenDTAUnaryFcnType);
 typedef int_T  (*SetGenericDTAUnaryFcnGW) (void *, const char_T *, DTypeId,
-                                           GenericDTAUnaryFcn, 
+                                           GenericDTAUnaryFcn,
                                            GenDTAUnaryFcnType);
-typedef int_T (*GenericDTAUnaryFcnGW) (slDataTypeAccess *, DTypeId, int_T, 
+typedef int_T (*GenericDTAUnaryFcnGW) (slDataTypeAccess *, DTypeId, int_T,
                                        const void *, const void *, void *,
                                        GenDTAUnaryFcnType);
 
 
-typedef int_T (*GenericDTABinaryFcn) (slDataTypeAccess *, const char_T *, 
-                                      DTypeId, int_T, const void *, 
+typedef int_T (*GenericDTABinaryFcn) (slDataTypeAccess *, const char_T *,
+                                      DTypeId, int_T, const void *,
                                       const void *, const void *, void *);
-typedef GenericDTABinaryFcn (*GetGenericDTABinaryFcnGW) (void *, const char_T *, 
-                                                         DTypeId, 
+typedef GenericDTABinaryFcn (*GetGenericDTABinaryFcnGW) (void *, const char_T *,
+                                                         DTypeId,
                                                          GenDTABinaryFcnType);
-typedef int_T (*SetGenericDTABinaryFcnGW) (void *, const char_T *, 
-                                           DTypeId, GenericDTABinaryFcn, 
+typedef int_T (*SetGenericDTABinaryFcnGW) (void *, const char_T *,
+                                           DTypeId, GenericDTABinaryFcn,
                                            GenDTABinaryFcnType);
-typedef int_T (*GenericDTABinaryFcnGW) (slDataTypeAccess *, DTypeId, 
-                                        int_T, const void *, 
+typedef int_T (*GenericDTABinaryFcnGW) (slDataTypeAccess *, DTypeId,
+                                        int_T, const void *,
                                         const void *, const void *,
                                         void *, GenDTABinaryFcnType);
 
-typedef int_T (*GetGenericDTADiagnostic) (void *, const char_T *, 
+typedef int_T (*GetGenericDTADiagnostic) (void *, const char_T *,
                                           GenDTADiagnosticType,
                                           BDErrorValue *);
 
@@ -1867,7 +1907,7 @@ struct _slDataTypeAccess_tag {
  */
 typedef const char *(*SFunExtModeFcn)(SimStruct *S, const ExtModeLogBlockMeth);
 
-/* 
+/*
  * Non-continuous (sample time != 0) signals driving derivative ports
  * (eg. integrand input port of an integrator block) need to be tracked
  * in order to determine when to reset variable step solvers.
@@ -1885,7 +1925,7 @@ typedef struct ssNonContDerivSigFeedingOutports_tag {
     struct ssNonContDerivSigFeedingOutports_tag *next;
 } ssNonContDerivSigFeedingOutports;
 #endif
- 
+
 /*
  * The _ssMdlInfo structure is "valid" in the root SimStruct only.  All child
  * SimStruct's point to the root SimStruct mdlInfo field.  Care must be taken
@@ -1919,8 +1959,8 @@ struct _ssMdlInfo {
   int_T       logOutput;       /* Log output?                                */
 
   time_T      *outputTimes;    /* Times at which to log data                 */
-  int_T       outputTimesIndex;/* Where we are in the OutputTimes vector     */
-  int_T       numOutputTimes;  /* Length of OutputTimes                      */
+  uint_T      outputTimesIndex;/* Where we are in the OutputTimes vector     */
+  uint_T      numOutputTimes;  /* Length of OutputTimes                      */
   int_T       outputTimesOnly; /* Save [t,x,y] & continuous blocks at
                                   specified times only?                      */
 
@@ -1936,7 +1976,7 @@ struct _ssMdlInfo {
       unsigned int zcCacheNeedsReset    : 1; /* recompute zc value left?     */
       unsigned int derivCacheNeedsReset : 1; /* recompute derivatives?       */
       unsigned int blkStateChange       : 1; /* did blk state change?        */
-      unsigned int reserved1            : 1; /* was skip intg phase (<=R12)  */
+      unsigned int reserved_1           : 1; /* was skip intg phase (<=R12)  */
       unsigned int forceSfcnExceptionHandling : 1; /* add exception handling *
                                                     *for all S-function calls*/
       unsigned int inlineParameters   :1; /* is inline parameters selected
@@ -1946,22 +1986,23 @@ struct _ssMdlInfo {
       unsigned int minStepViolatedError :1; /* what to do if the solver step
                                              * size is less than the min step
                                              * size: 0 => warn 1 => error */
-      unsigned int consecutiveZCsError  :1; /* what to do for consecutive zc
-                                             * error/warning 
+      unsigned int reservedone          :1; /* was to do for consecutive zc
+                                             * error/warning
                                              * 0 => warn 1         => error */
       unsigned int noZCStateUpdate      :1; /* set when blocks shouldn't    */
                                             /* previous zc state due to     */
                                             /* algebraic loop solving, etc. */
       unsigned int computingJacobian  :1;   /* 1 when computing Jacobian    */
-                                            /* for use in ODE solver        */ 
+                                            /* for use in ODE solver        */
       unsigned int solverCheckingCIC  :1;   /* 1 -- ODE solver checks if it */
                                             /* has consistent initial conds */
                                             /*  |M*xdot - f| is 'small'     */
-      unsigned int errorStatusIsMsg     : 1; /* 1 SimStruct_tag errorStatus is 
-                                              * void*, 
+      unsigned int errorStatusIsMsg     : 1; /* 1 SimStruct_tag errorStatus is
+                                              * void*,
                                               * otherwise is const char*    */
       unsigned int timeTweakWarn         :1; /* whether to warn when time is tweaked*/
-      unsigned int reserved2            :2; /* remainder are reserved       */
+      unsigned int solverRequestingReset :1; /* e.g, step ended at discontinuity */
+      unsigned int firstInitCondCalled   :1; /* initCond Has been called at least once  */
 
       unsigned int reserved16           :16; /* remainder are reserved      */
   } mdlFlags;
@@ -1985,8 +2026,8 @@ struct _ssMdlInfo {
   void              *unused[2];
   void              *mexApiVoidPtr1; /* reserved for use by Simulink mex api */
 
-  int_T solverExtrapolationOrder; /* Extrapolation order for ODE14x          */        
-  int_T solverNumberNewtonIterations; /* Number of iterations for ODE14x     */        
+  int_T solverExtrapolationOrder; /* Extrapolation order for ODE14x          */
+  int_T solverNumberNewtonIterations; /* Number of iterations for ODE14x     */
 
   /*
    * External mode object
@@ -2032,10 +2073,10 @@ struct _ssMdlInfo {
 
   int_T   mexApiInt2;                    /* for use by Simulink mex api */
   char_T  reservedString[32];            /* IMPORTANT:
-                                            Keep it fixed at 32 characters 
-                                            as it is needed for backward 
+                                            Keep it fixed at 32 characters
+                                            as it is needed for backward
                                             compatibility */
-
+    
 
    _ssSetInputPortDimensionInfoFcn    regInputPortDimsInfo;
    _ssSetOutputPortDimensionInfoFcn   regOutputPortDimsInfo;
@@ -2056,13 +2097,13 @@ struct _ssMdlInfo {
 # endif
 
   SolverMode   solverMode;          /* Simulation solver mode */
-  RTWGenMode   rtwgenMode;  
+  RTWGenMode   rtwgenMode;
   int_T        reservedForFutureInt[2];
 
   real_T       mexApiReal1;         /* reserved for use by Simulink mex api */
   real_T       mexApiReal2;         /* reserved for use by Simulink mex api */
 
-  void       *reservedForFuture;
+  real_T*     timeOfNextSampleHit;
   real_T     *varNextHitTimesList;
   boolean_T  *tNextWasAdjusted;
   real_T     *reservedDoubleVect[1];
@@ -2113,7 +2154,7 @@ struct _ssResolveCBK {
 
 /*---------------------------------------------------------------------------*/
 
-typedef DTypeId         (*OldRegisterDataType)(void *, char_T *);
+typedef DTypeId         (*OldRegisterDataType)(void *, const char_T *);
 typedef int_T           (*SetDataTypeSize) (void *, DTypeId, int_T );
 typedef int_T           (*GetDataTypeSize) (void *, DTypeId);
 typedef int_T           (*SetDataTypeZero) (void *, DTypeId, void *);
@@ -2168,8 +2209,8 @@ struct _ssStInfo {
 /*
  * Level 2 S-function methods:
  *
- * [mdlInitializePropagationPassFcn] - Optional routine. Perform any 
- *                                 necessary initialization before the 
+ * [mdlInitializePropagationPassFcn] - Optional routine. Perform any
+ *                                 necessary initialization before the
  *                                 specified propagation pass begins.
  *=> mdlInitializeSizes         -  Initialize SimStruct sizes array
  *   [mdlSetInputPortWidth]     -  Optional routine. Check and set input and
@@ -2195,7 +2236,7 @@ struct _ssStInfo {
  *
  *   [mdlInitializeConditions]  -  Initialize model parameters (usually
  *                                 states). Will not be called if your
- *                                 S-function does not have an intialize
+ *                                 S-function does not have an initialize
  *                                 conditions routine.
  *   [mdlStart]                 -  Optional routine. Preform actitons such
  *                                 as allocating memory and attaching to pwork
@@ -2220,7 +2261,7 @@ struct _ssStInfo {
  *        [mdlGetTimeOfNextVarHit] -  Optional routine. If your S-function
  *                                    has a variable step sample time, then
  *                                    this routine will be called.
- *        [mdlIntializeConditions] -  Optional routine. Only called if your
+ *        [mdlInitializeConditions] -  Optional routine. Only called if your
  *                                    S-function resides in an enabled
  *                                    subsystem configured to reset states,
  *                                    and the subsystem has just enabled.
@@ -2301,6 +2342,8 @@ typedef void (*mdlInitializeConditionsLevel1Fcn)(real_T *x0, SimStruct *S);
 
 typedef void (*mdlStartFcn)(SimStruct *S);
 
+typedef void (*mdlInitSystemMatricesFcn)(SimStruct *S);
+
 typedef void  (*mdlCheckParametersFcn)(SimStruct *S);
 typedef void (*mdlProcessParametersFcn)(SimStruct *S);
 
@@ -2336,18 +2379,23 @@ typedef void (*mdlTerminateFcn)(SimStruct *S);
 
 typedef void (*mdlMassMatrixFcn)(SimStruct *S);
 
-typedef void (*mdlSimulationContextIOFcn)(SimStruct *S, const char io, FILE *fp);
-
 struct _ssMassMatrixInfo {
     ssMatrixType        type;           /* SS_MATRIX_***, ...                  */
     ssSparseMatrixInfo  info;           /* Ir,Jc,Pr, etc.                      */
-    mdlMassMatrixFcn    mdlMassMatrix;  /* function evaluating the MassMatrix  */                                  
 };
 
 typedef void (*mdlForcingFunctionFcn)(SimStruct *S);
 
+typedef void (*mdlConstraintsFcn)(SimStruct *S);
+
+struct _ssConstraintsInfo {
+    int_T              numConstraints;  /* length of the constraints vector    */
+    real_T             *constraints;    /* constraints vector                  */
+    mdlConstraintsFcn  mdlConstraints;  /* function evaluating the constraints */
+};
+
 typedef void (*mdlSimStatusChangeFcn)(SimStruct *S, ssSimStatusChangeType  mEvent);
-       
+
 struct _ssSFcnModelMethods {
 
     mdlInitializeSizesFcn               mdlInitializeSizes;
@@ -2420,6 +2468,20 @@ struct _ssSFcnModelMethods {
 
 }; /* _ssSFcnModelMethods */
 
+#if  SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+typedef mxArray* (*mdlGetSimStateFcn)(SimStruct* S);
+typedef void (*mdlSetSimStateFcn)(SimStruct* S, const mxArray* in);
+#endif
+
+struct _ssSFcnModelMethods3 {
+
+    /* Embedding the structure -- massMatrix.type and *
+     * massMatrix.info.nzMax must be always available */
+    struct _ssMassMatrixInfo massMatrix;   
+
+    mdlInitSystemMatricesFcn mdlInitSystemMatrices;
+
+};
 
 struct _ssSFcnModelMethods2 {
 
@@ -2449,11 +2511,11 @@ struct _ssSFcnModelMethods2 {
 
     mdlRTWCGFcn mdlRTWCG;
 
-    struct _ssMassMatrixInfo *massMatrix;
-    
-    mdlSimulationContextIOFcn mdlSimulationContextIO;
+    mdlMassMatrixFcn    mdlMassMatrix;  /* function evaluating the MassMatrix  */                                      
 
-    mdlForcingFunctionFcn    mdlForcingFunction;
+    void* unused;
+
+    mdlForcingFunctionFcn     mdlForcingFunction;
 
     mdlEnableFcn              mdlEnable;
     mdlDisableFcn             mdlDisable;
@@ -2461,11 +2523,9 @@ struct _ssSFcnModelMethods2 {
 
     mdlInitializePropagationPassFcn mdlInitializePropagationPass;
 
-    /* Reserved */
-    void *reserved[1];
+    struct _ssConstraintsInfo *constraintsInfo;
     
-    /* don't use the last one - make it a ptr to methods3 */
-    void *doNotUseNeededForExtendingStruct;
+    struct _ssSFcnModelMethods3 *modelMethods3;
 };
 
 /* AlreadyWarned flag for blocks */
@@ -2666,7 +2726,7 @@ struct SimStruct_tag {
 
 #define _ssGetErrorStatus(S) \
        ( ssGetRootSS(S)->mdlInfo->mdlFlags.errorStatusIsMsg == 1U ? \
-       NULL : ssGetRootSS(S)->errorStatus.str )       
+       NULL : ssGetRootSS(S)->errorStatus.str )
 #define _ssGet_slErrMsg(S) \
        ( ssGetRootSS(S)->mdlInfo->mdlFlags.errorStatusIsMsg == 0U ? \
        NULL : ssGetRootSS(S)->errorStatus.msg )
@@ -3007,10 +3067,10 @@ struct SimStruct_tag {
 #define ssGetVersion(S) \
           (S)->sizes.simStructVer                         /*   (int_T)       */
 #define ssSetVersion(S,ver) \
-          (S)->sizes.simStructVer = (ver)
+          (S)->sizes.simStructVer = (int32_T) (ver)
 
 #define ssGetSFcnLevel(S) \
-          ((S)->sizes.simStructVer == SIMSTRUCT_VERSION_LEVEL2? 2: 1)
+          ((S)->sizes.simStructVer == (int32_T) SIMSTRUCT_VERSION_LEVEL2? 2: 1)
 
 /* NumNonsampledZCs - This is the number of nonsampled zero crossings your
  *   S-function has. The root SimStruct contains the total number of nonsampled
@@ -3043,12 +3103,16 @@ struct SimStruct_tag {
           (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].zcDir = (val)
 #define ssSetZeroCrossingNeedsEvent(S, zcIdx, val) \
           (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].needsEvent = (val)
+#define ssSetZeroCrossingSignalType(S, zcIdx, val) \
+          (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].zcSignalType = (val)
 #define ssGetZeroCrossingType(S, zcIdx) \
           (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].zcType
 #define ssGetZeroCrossingDirection(S, zcIdx) \
           (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].zcDir
 #define ssGetZeroCrossingNeedsEvent(S, zcIdx) \
           (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].needsEvent
+#define ssGetZeroCrossingSignalType(S, zcIdx) \
+          (S)->blkInfo.blkInfo2->zeroCrossingInfo[(zcIdx)].zcSignalType
 #endif
 
 /* NumZCEvents - This is the number of zero crossing events within your model.
@@ -3149,7 +3213,7 @@ struct SimStruct_tag {
           (S)->sizes.flags.blockReduction     /*   (unsigned int_T: 1) */
 #define ssSetBlockReduction(S,n) \
           (S)->sizes.flags.blockReduction = (n)
-/* 
+/*
  * ss(Set|Get)TreatAsAtomic - This macro is NOT to be used by
  *                            custom S-Functions.
  */
@@ -3158,7 +3222,7 @@ struct SimStruct_tag {
 #define ssSetTreatAsAtomic(S,n) \
           (S)->sizes.flags.treatAsAtomic = (n)
 /*
- * ss(Set|Get)HasSubFunctions - This macro is NOT to be useb by 
+ * ss(Set|Get)HasSubFunctions - This macro is NOT to be useb by
  *                              custom S-Functions.
  */
 #define ssGetHasSubFunctions(S) \
@@ -3167,7 +3231,7 @@ struct SimStruct_tag {
           (S)->sizes.flags.hasSubFunctions = (n)
 
 /*
- * ss(Set|Get)CallsOutputInInitFcn - This macro is NOT to be useb by 
+ * ss(Set|Get)CallsOutputInInitFcn - This macro is NOT to be useb by
  *                                    custom S-Functions.
  */
 #define ssGetCallsOutputInInitFcn(S) \
@@ -3182,10 +3246,10 @@ struct SimStruct_tag {
 #define ssSetRTWCG(S,n) \
           (S)->sizes.flags.rtwcg = (n)
 
-/* Block need absolute time. If block requiring absolute does not 
+/* Block need absolute time. If block requiring absolute does not
  * set this flag. Obsolete absolute time will be used. Obsolete absolute
  * timer cann't support fixed pt blocks.
- */ 
+ */
 #define ssGetNeedAbsoluteTime(S) \
           (S)->sizes.flags.needAbsoluteTime /*   (unsigned int_T: 1) */
 #define ssSetNeedAbsoluteTime(S,n) \
@@ -3196,8 +3260,8 @@ struct SimStruct_tag {
 #define ssSetNeedElapseTime(S,n) \
           (S)->sizes.flags.needElapseTime = (n)
 
-/* 
- * mdlProjection may be present but S-Fcn may not want to call it 
+/*
+ * mdlProjection may be present but S-Fcn may not want to call it
  */
 #define ssSetDisableMdlProjection(S,boolVal) \
            ((S)->sizes.flags.disableMdlProjection = (boolVal) ? 1U : 0U)
@@ -3212,6 +3276,26 @@ struct SimStruct_tag {
           (S)->sizes.flags.explicitFCSSCtrl     /*   (unsigned int_T: 1) */
 #define ssSetExplicitFCSSCtrl(S,n) \
           (S)->sizes.flags.explicitFCSSCtrl = (n)
+
+/*
+ * ss(Set|Get)ModelReferenceNormalModeSupport
+ *
+ * If this s-function has a mdlProcessParameters and mdlStart function,
+ * and is used in a model referenced in normal mode, Simulink will error
+ * out by default.  If your mdlProcessParameters function is safe to call
+ * before mdlStart, set it to  MDL_START_AND_MDL_PROCESS_PARAMS_OK
+ */
+typedef enum {
+    DEFAULT_SUPPORT_FOR_NORMAL_MODE = 0,
+    MDL_START_AND_MDL_PROCESS_PARAMS_OK = 1,
+    TUNABLE_PARAMS_NOT_USED_IN_MDL_START = 2
+} ssModelReferenceNormalModeSupport;
+
+#define ssGetModelReferenceNormalModeSupport(S) \
+          (ssModelReferenceNormalModeSupport)\
+          ((S)->sizes.flags.modelRefNormalModeSupport)
+#define ssSetModelReferenceNormalModeSupport(S, n) \
+          (S)->sizes.flags.modelRefNormalModeSupport = (n)
 
 /* PortBasedSampleTimeBlockIsTriggered
  *   This macro is for use during calls to mdlOutputs and mdlUpdate
@@ -3268,6 +3352,18 @@ struct SimStruct_tag {
 /*************************
  * Input Port Dimensions *
  *************************/
+/*  ssGetInputPortDimensionSize returns the size of a specified
+ *  dimension at the input port. If the dimension index is greater
+ *  than or equal to the number of input port dimensions,
+ *  ssGetInputPortDimensionSize returns 1.
+ */
+# define ssGetInputPortDimensionSize(S,port,dIdx) \
+         ((dIdx) < ssGetInputPortNumDimensions((S),(port)) ? \
+                  (S)->portInfo.inputs[(port)].dims[(dIdx)] : 1)
+
+/* ssGetInputPortDimensions returns the pointer to the dimension
+ * size array for the input port
+ */
 # define ssGetInputPortDimensions(S,port) \
          ((S)->portInfo.inputs[(port)].dims)
 
@@ -3320,7 +3416,7 @@ struct SimStruct_tag {
 #   define ssSetInputPortVectorDimension(S,port,val) (1)
 # endif
 
-/* 
+/*
  * Set/Get flag that specifies if an S-function can handle
  * N-D signals
  */
@@ -3333,6 +3429,58 @@ struct SimStruct_tag {
 # else
 #   define ssAllowSignalsWithMoreThan2D(S)
 # endif
+
+/*
+ * Set flag that specifies if an S-function can handle
+ * Big Long signal
+ * ssAllowSignalsHandleBigLong(S) is deprecated.
+ * Please use ssFxpSetU32BitRegionCompliant defined in fixedpoint.h instead
+ */
+# if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+#   define ssAllowSignalsHandleBigLong(S)           \
+           _ssSafelyCallGenericFcnStart(S)(S,       \
+                GEN_FCN_SET_SIGS_ALLOW_BIG_LONG,    \
+                1,NULL)\
+           _ssSafelyCallGenericFcnEnd
+# else
+#   define ssAllowSignalsHandleBigLong(S)
+# endif
+
+/* 
+ * Specify the capabilities to handle data types with 
+ * various word lengths. By default, it is assumed that
+ * S-Function blocks are not implemented with necessary
+ * RTW support for word lengths beyond 32 bits. If a block
+ * has implemented necessary support for longer word 
+ * lengths, then two different levels of support can be 
+ * declared. One option is support up to the size of long
+ * on the current code generation target. The second 
+ * option is no limitation which means the block is designed
+ * to handle MultiWord situations. 
+ * 
+ * If limitations are declared and code generation is 
+ * attempted, then Simulink will automatically check 
+ * if any of the following items,  input ports, output 
+ * ports, run-time parameters or dworks have data types 
+ * with word lengths beyond the limit. If the limit is 
+ * exceeded, Simulink will issue an error message. 
+ */
+typedef enum {
+    RTW_SUPPORT_BEYOND_32_BITS_NO = 0U, /* S-Function default */
+    RTW_SUPPORT_BEYOND_32_BITS_FULLY  = 1U,
+    RTW_SUPPORT_BEYOND_32_BITS_UP_TO_TARGET_LONG = 2U
+} SupportDataTypeBeyond32BitsInRTWFlag;
+ 
+# if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+#   define ssSetSupportDataTypeBeyond32BitsInRTW(S, val)           \
+           _ssSafelyCallGenericFcnStart(S)(S,       \
+                GEN_FCN_SET_SUPPORT_DATATYPE_BEYOND_32_BITS_IN_RTW,   \
+                val,NULL)\
+           _ssSafelyCallGenericFcnEnd
+# else
+#   define ssSetSupportDataTypeBeyond32BitsInRTW(S, val)
+# endif
+
 
 /***************************
  * END of width/dimensions *
@@ -3348,7 +3496,7 @@ struct SimStruct_tag {
           (S)->portInfo.outputs[(port)].attributes.cecId = (val)
 
  /* InputPortFrameData -  For each input port or your S-function block, this
-  *   is whether or not the incomming signal is frame data, where (-1=either,
+  *   is whether or not the incoming signal is frame data, where (-1=either,
   *   0=no, 1=yes).
   */
 # define ssGetInputPortFrameData(S,port) \
@@ -3390,7 +3538,7 @@ extern void _ssSetInputPortDirectFeedThroughFcn(const SimStruct *S, int port,
           ((S)->portInfo.inputs[(port)].dataTypeId = (dTypeId))
 
  /* InputComplexSignal - For each input port or your S-function block, this is
-  *   whether or not the incomming signal is complex, where (-1=either, 0=no,
+  *   whether or not the incoming signal is complex, where (-1=either, 0=no,
   *   1=yes).
   */
 # define ssGetInputPortComplexSignal(S,port) \
@@ -3603,6 +3751,20 @@ extern void _ssSetInputPortReusableFcn(SimStruct *S, int port, int val);
        ( (S)->portInfo.inputs[(port)].attributes.optimOpts = (val) )
 
 
+/* InputPortOptimizeInIR - This macro allows S-Functions that use the code 
+ * generation intermediate representation (CGIR) to generate code, to enable
+ * optimizations on for the input port that would otherwise be disabled by
+ * default. For example, the macro should be used if a S-Function set its
+ * input port conservatively as global, because it is accessed in both the
+ * output and the update function. It is possible for CGIR to safely optimize
+ * the port signal if output and update get combined.
+ */
+# define ssGetInputPortOptimizeInIR(S,port) \
+    ( (S)->portInfo.inputs[(port)].attributes.optimizeInIR )
+# define ssSetInputPortOptimizeInIR(S,port,val) \
+    ( (S)->portInfo.inputs[(port)].attributes.optimizeInIR = (val) )
+
+
  /* InputPortBufferDstPort - If an input port and some output port on an
   *   S-Function are *not* test points, and in addition,  if this input port is
   *   overwritable, then one of the "untest-pointed" output ports of this
@@ -3704,6 +3866,18 @@ extern void _ssSetInputPortReusableFcn(SimStruct *S, int port, int val);
 /*************************
  * Output Port Dimensions *
  *************************/
+/* ssGetOutputPortDimensionSize returns the size of a specific
+ * dimension at the output port. If the dimension index is greater
+ * than or equal to the number of input port dimensions,
+ * ssGetOutputPortDimensionSize returns 1.
+ */
+# define ssGetOutputPortDimensionSize(S,port,dIdx) \
+         ((dIdx) < ssGetOutputPortNumDimensions((S),(port)) ? \
+                  (S)->portInfo.outputs[(port)].dims[(dIdx)] : 1)
+
+/* ssGetOutputPortDimensions returns the pointer to the dimension
+ * size array for the output port
+ */
 # define ssGetOutputPortDimensions(S,port) \
          ((S)->portInfo.outputs[(port)].dims)
 
@@ -3754,6 +3928,20 @@ extern void _ssSetInputPortReusableFcn(SimStruct *S, int port, int val);
 #  define ssSetOutputPortVectorDimension(S,port,val) (1)
 #endif
 
+/* ssPruneNDMatrixSingletonDimensions removes all trailing
+ * singleton dimensions in the dimInfo structure. The function
+ * modifies the number of dimensions in the dimInfo structure,
+ * but does not change the dimension size array in dimInfo
+ */
+# if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+#define ssPruneNDMatrixSingletonDims(S,dimInfo) \
+ _ssSafelyCallGenericFcnStart(S)(S,GEN_FCN_PRUN_TRAILING_DIMS, \
+                                 0,(void *)dimInfo)\
+ _ssSafelyCallGenericFcnEnd
+# else
+#define ssPruneNDMatrixSingletonDims(S,dimInfo)
+# endif
+
 /***************************
  * END of width/dimensions *
  ***************************/
@@ -3786,7 +3974,7 @@ extern void _ssSetInputPortReusableFcn(SimStruct *S, int port, int val);
 #  if SS_SFCN_FOR_SIM && !SS_NDEBUG
 #ifdef __cplusplus
     extern "C" {
-#endif 
+#endif
 extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
 #ifdef __cplusplus
     }
@@ -3803,12 +3991,26 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
 
  /* OutputPortOptimOpts - This macro gives finer control for the S-Function to
   * specify the reusability and indentifier scope of the output port signal
-  * seperately.
+  * separately.
   */
 # define ssGetOutputPortOptimOpts(S,port) \
        ( (S)->portInfo.outputs[(port)].attributes.optimOpts )
 # define ssSetOutputPortOptimOpts(S,port,val) \
        ( (S)->portInfo.outputs[(port)].attributes.optimOpts = (val) )
+
+
+/* OutputPortOptimizeInIR - This macro allows S-Functions that use the code 
+ * generation intermediate representation (CGIR) to generate code, to enable
+ * optimizations on for the output port that would otherwise be disabled by
+ * default. For example, the macro should be used if a S-Function set its
+ * output port conservatively as global, because it is accessed in both the
+ * output and the update function. It is possible for CGIR to safely optimize
+ * the port signal if output and update get combined.
+ */
+# define ssGetOutputPortOptimizeInIR(S,port) \
+    ( (S)->portInfo.outputs[(port)].attributes.optimizeInIR )
+# define ssSetOutputPortOptimizeInIR(S,port,val) \
+    ( (S)->portInfo.outputs[(port)].attributes.optimizeInIR = (val) )
 
 
  /* OutputPortBeingMerged - If this output port signal of the S-Function is
@@ -3872,7 +4074,7 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
 #if defined(RTW_GENERATED_S_FUNCTION) || SS_SL_INTERNAL
  /* OutputPortIsNonContinuous - Specify that the output port signal is
   * noncontinuous (ie has a discontinuity even if the sample time is
-  * continuous).  This setting is used to determine what noncontinuous 
+  * continuous).  This setting is used to determine what noncontinuous
   * signals to track during simulation.  It is false by default.
   */
 # define ssGetOutputPortIsNonContinuous(S,port) \
@@ -3881,7 +4083,7 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
        ( (S)->portInfo.outputs[(port)].attributes.nonContPort = \
          (val) ? 1U : 0U)
 
-/* 
+/*
  * Specify that the output port is being driven by a block
  * with modes but no zero-crossings.  We need this for model
  * reference to determine if DerivCacheNeedsReset is true.
@@ -3901,6 +4103,27 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
 # define ssSetOutputPortDataType(S,port,dTypeId) \
           ((S)->portInfo.outputs[(port)].dataTypeId= (dTypeId))
 
+typedef enum {
+    SS_DATA_DESC_OUTPUT,
+    SS_DATA_DESC_INPUT,
+    SS_DATA_DESC_RTP,
+    SS_DATA_DESC_DWORK
+} SSDataDescType;
+
+#define ssRegisterDataMinMaxPrmIndices(S,dataDescType,dataIdx,prmMinIdx,prmMaxIdx)    \
+    { \
+        int _moreArgs[3] = { (int) (dataDescType), (prmMinIdx), (prmMaxIdx) }; \
+        _ssSafelyCallGenericFcnStart(S)((S),                            \
+            GEN_FCN_REGISTER_DATA_MIN_MAX_PRM_INDICES, (dataIdx), _moreArgs) \
+        _ssSafelyCallGenericFcnEnd; \
+    }
+
+/*
+ * Register dialog parameters indexed as prmMinIdx and prmMaxIdx as design 
+ * minimum and maximum for the output port of index portIdx. 
+ */
+#define ssRegisterOutputPortMinMaxPrmIndices(S,portIdx,prmMinIdx,prmMaxIdx)        \
+    ssRegisterDataMinMaxPrmIndices((S),SS_DATA_DESC_OUTPUT,(portIdx),(prmMinIdx),(prmMaxIdx))
 
  /* OutputComplexSignal - For each input port or your S-function block, this is
   *   whether or not the outgoing signal is complex, where (-1=either, 0=no,
@@ -4044,57 +4267,57 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
  *   your S-function block from inheriting a constant sample time.
  *
  * SS_OPTION_ASYNCHRONOUS - This option applies only to S-functions that
- *   have no input ports during code generation and 1 output port. 
+ *   have no input ports during code generation and 1 output port.
  *   During simulation, the S-function may have an input port to provide
- *   a condition on which to execute. The output port must be configured to 
- *   perform function calls on every element.  If any of these requirements 
- *   are not met, the SS_OPTION_ASYNCHRONOUS is ignored.  Use this option 
- *   when driving function-call subsystems that will be attached to 
+ *   a condition on which to execute. The output port must be configured to
+ *   perform function calls on every element.  If any of these requirements
+ *   are not met, the SS_OPTION_ASYNCHRONOUS is ignored.  Use this option
+ *   when driving function-call subsystems that will be attached to
  *   asynchronous tasks. Specifying this
- *     1) Informs Simulink that there is no implied data dependency involving 
+ *     1) Informs Simulink that there is no implied data dependency involving
  *        the data sources or destinations of the function-call subsystem called
  *        by the S-function.
  *     2) Causes the function-call subsystem attached to the S-function to be
  *        colored cyan indicating that it does not execute at a periodic rate.
  *     3) Enables additional checks to verify that the model is
  *        constructed correctly:
- *          a) Simulink validates that the appropriate asynchronous rate 
- *             transition blocks reside between the (cyan) function-call 
- *             subsystem and period tasks exists. You can always directly 
- *             read & write from the function-call subsys by using a block 
- *             similar to the 'vxlib/Asynchronous Support/Rate Transition' 
- *             block that has no computational overhead (look at the Tag value 
- *             on the Outport block within the Rate Transition masked 
- *             subsystem). Safe task transitions between period and 
- *             asynchronous tasks are created by using the 
- *             SS_OPTION_ASYNC_RATE_TRANSTION.
+ *          a) Simulink validates that the appropriate asynchronous rate
+ *             transition blocks reside between the (cyan) function-call
+ *             subsystem and period tasks exists. You can always directly
+ *             read & write from the function-call subsys by using a block
+ *             similar to the 'vxlib/Asynchronous Support/Rate Transition'
+ *             block that has no computational overhead (look at the Tag value
+ *             on the Outport block within the Rate Transition masked
+ *             subsystem). Safe task transitions between period and
+ *             asynchronous tasks are created by using the
+ *             SS_OPTION_ASYNC_RATE_TRANSITION.
  *             See the 'vxlib/Asynchronous Support' library.
  *          b) For data transfers between two asynchronously executed (cycan)
  *             function-call subsystem, Simulink validates that the appropriate
  *             asynchronous task transition blocks exits.
  *             See the 'vxlib/Asynchronous Support' library.
  *
- * SS_OPTION_ASYNCHRONOUS_INTERRUPT - This option is very similar to 
+ * SS_OPTION_ASYNCHRONOUS_INTERRUPT - This option is very similar to
  *   SS_OPTION_ASYNCHRONOUS. This option adds the restriction that the
  *   this S-function and the destination function-call subsystem cannot reside
  *   in conditionally executed subsystems. This option should be used when the
  *   destination function-call subsystem is going to be directly attached to an
- *   interrupt. This added restriction is useful to prevent conceptual modeling 
+ *   interrupt. This added restriction is useful to prevent conceptual modeling
  *   errors. Specifically, if an function-call subsystem resides within an
- *   enabled subsystem, you would assume that it will only execute occurr when
- *   the enable signal is > 0, but this would not be the behavior if the 
+ *   enabled subsystem, you would assume that it will only execute occur when
+ *   the enable signal is > 0, but this would not be the behavior if the
  *   function-call subsystem were to be attached to an interrupt. Therefore
  *   this option prevents this possible source of confusion.
- *   Note, during simulation (and not code generation), Simulink allows the 
+ *   Note, during simulation (and not code generation), Simulink allows the
  *   S-function to reside in a conditionally executed subsystem. See the
  *   VxWorks interrupt block for an example - in simulation we use a
  *   triggered subsystem to simulate the interrupt and during code generation
  *   the trigger port is removed.
- *   
+ *
  *
  * SS_OPTION_ASYNCHRONOUS_CUSTOM - Similar to SS_OPTION_ASYNCHRONOUS, except
  *   items 3a, 3b are removed.
- * 
+ *
  * SS_OPTION_ASYNC_RATE_TRANSITION - Use this when your s-function converts a
  *   guarantees data integrity when transferring data to/from an
  *   asynchronously executed function-call subsystem. There are two types
@@ -4137,7 +4360,7 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
  *
  * SS_OPTION_NONSTANDARD_PORT_WIDTHS - If your S-function has mdl
  *   set input/output port routines with dynamically sized ports and the port
- *   widths don't follow the standard rules of scalar exapansion or
+ *   widths don't follow the standard rules of scalar expansion or
  *   vector collapsing, then you may need to set this flag for Simulink.
  *   This usually occurs when the output width is not 1 and not equal to the
  *   maximum of the input widths.
@@ -4180,7 +4403,7 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
  *   execution of the S-function.  By default, the Accelerator will use
  *   the mex version of the S-function even though a TLC file for the
  *   S-function exists. This option should not be set for device driver
- *   blocks (A/D) or when there is an incompatability between running the
+ *   blocks (A/D) or when there is an incompatibility between running the
  *   mex Start/InitializeConditions functions together with the TLC
  *   Outputs/Update/Derivatives.
  *
@@ -4231,14 +4454,19 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
  *   originate the constant sample time or can have one propagated to it.
  *
  * SS_OPTION_WORKS_WITH_CODE_REUSE - Use this option to specify that your
- *   S-Function will work in a system that is being reused in RTW 
- *   generated code.  If this option is not set, then the system that 
+ *   S-Function will work in a system that is being reused in RTW
+ *   generated code.  If this option is not set, then the system that
  *   this S-Function lives in will not be reused.
  *
  * SS_OPTION_SUPPORTS_ALIAS_DATA_TYPES - This is used to state whether
  *   or not this block supports alias data types
- * 
  *
+ * SS_OPTION_NO_INFLUENCE_ON_DEFAULT_MDL_DIMS - When dimensions propagation
+ * to converge to a set of dimensions, blocks are queried individually 
+ * to setup their default dimensions. In the case of the S-function, this is 
+ * done by calling the mdlSetDefaultPortDimensions function. If the S-function
+ * has no clear means of identifying a default set of dimensions, please 
+ * use this flag to postpone calls to mdlSetDefaultPortDimensions.
  */
 #if SS_SFCN_LEVEL_1 || !SS_SFCN
 # define SS_OPTION_USING_ssGetUPtrs              0x00000001
@@ -4260,7 +4488,7 @@ extern void _ssSetOutputPortReusableFcn(SimStruct *S, int port, int val);
 # define SS_OPTION_SFUNCTION_INLINED_FOR_RTW     0x00001000
                                           /* !!! 0x00002000 used below !!! */
 # define SS_OPTION_ALLOW_PARTIAL_DIMENSIONS_CALL 0x00004000
-# define SS_RESERVED                             0x00008000
+# define SS_OPTION_NO_INFLUENCE_ON_DEFAULT_MDL_DIMS  0x00008000
 # define SS_OPTION_ADA_S_FUNCTION                0x00010000
 # define SS_OPTION_FORCE_NONINLINED_FCNCALL      0x00020000
                                           /* !!! 0x00040000 used below !!! */
@@ -4429,7 +4657,23 @@ GEN_FCN_CHECK_SFCN_PARAM_VALUE_ATTRIBS, pIdx, &locPI) \
    }
 
 
-/* Macros for manipulating run-time parameters */
+/* ======================================================================
+ *  Macros for manipulating run-time parameters.
+ * ======================================================================
+ * The most commonly used macros are:
+ * - ssSetNumRunTimeParams
+ *   ==> To set the number of run-time parameters (before registering run-time parameters)
+ *
+ * - ssRegAllTunableParamsAsRunTimeParams
+ *   ==> To register all tunable SFcnParams as run-time parameters (in mdlSetWorkWidths)
+ * - ssRegDlgParamAsRunTimeParam
+ *   ==> To register specific SFcnParam as a run-time parameter (in mdlSetWorkWidths)
+ *       This macro will perform data type conversion if necessary
+ *
+ * - ssUpdateAllTunableParamsAsRunTimeParams
+ * - ssUpdateDlgParamAsRunTimeParam
+ *   ==> To update values of run-time parameters during simulation (in mdlProcessParameters)
+ */
 #define ssGetNumRunTimeParams(S) (S)->sfcnParams.numRtp.numRtp
 
 #define _ssSetNumRunTimeParams(S, num) \
@@ -4488,7 +4732,7 @@ GEN_FCN_CHECK_SFCN_PARAM_VALUE_ATTRIBS, pIdx, &locPI) \
 #endif
 
 typedef struct _ssRTPFromDataInfoWithConv_tag {
-    void       *data;                
+    void       *data;
     int        nDataDims;            /* data dimension number       */
     int        *dataDims;            /* data dimensions             */
     DTypeId    dataTypeId;           /* CANNOT be DYNAMICALLY_TYPED */
@@ -4523,23 +4767,30 @@ typedef struct _ssRTPRegInfoWithTypeComp_tag {
     CSignal_T complexity;
 } ssRTPRegInfoWithTypeComp;
 
-typedef struct _ssTimerInfo_tag {
-    double clockTickStepSize;
-    int_T  clockTickDtype;
-} ssTimerInfo;
+
 
 typedef enum{
-    SS_TIMESOURCE_BASERATE,   /* asycn task does not manage time, 
+    SS_TIMESOURCE_BASERATE,   /* asycn task does not manage time,
                     reads absolute time from base rate */
     SS_TIMESOURCE_SELF,        /* async task manage it own independent
                     timer */
-    SS_TIMESOURCE_CALLER       /* async task read time from its upstream 
+    SS_TIMESOURCE_CALLER,       /* async task read time from its upstream 
                     task */
+    SS_TIMESOURCE_SELF_INTERNAL, /* If an async task periodically executes, 
+                                  * the task may choose to maintain internal timer 
+                                  * by incrementing at each execution */
+    SS_INVALID_TIMESOURCE
 } slTimeSource;
 
 #define BASE_RATE SS_TIMESOURCE_BASERATE
 #define SELF SS_TIMESOURCE_SELF
 #define CALLER SS_TIMESOURCE_CALLER
+
+typedef struct _ssTimerInfo_tag {
+    double clockTickStepSize;
+    int_T  clockTickDtype;
+    slTimeSource timeSource;
+} ssTimerInfo;
 
 #if SS_SFCN && SS_SIM
 # define ssUpdateRunTimeParamInfo(S, idx, p) \
@@ -4573,6 +4824,13 @@ typedef enum{
      (void *)&_slConvTypeAndRegParamInfo)\
    _ssSafelyCallGenericFcnEnd; \
  }
+
+/*
+ * Register dialog parameters indexed as rtpMinIdx and rtpMaxIdx as design 
+ * minimum and maximum for the run-time parameter of index rtpIdx. 
+ */
+# define ssRegisterRunTimeParamMinMaxPrmIndices(S,rtpIdx,rtpMinIdx,rtpMaxIdx) \
+    ssRegisterDataMinMaxPrmIndices((S),SS_DATA_DESC_RTP,(rtpIdx),(rtpMinIdx),(rtpMaxIdx))
 
 # define ssUpdateDlgParamAsRunTimeParam(S, rtIdxArg) \
  { _ssSafelyCallGenericFcnStart(S) \
@@ -4613,7 +4871,7 @@ typedef enum{
  }
 
 # define ssRegAllTunableParamsAsRunTimeParams(S, nms) \
- _ssSafelyCallGenericFcnStart(S)(S,GEN_FCN_REG_ALL_TUNE_PRM_AS_RTP,0,\
+ _ssSafelyCallGenericFcnStart(S)(S,GEN_FCN_REG_ALL_TUNE_PRM_AS_RTP,0, \
                                    (void *)nms)\
  _ssSafelyCallGenericFcnEnd
 # define ssUpdateAllTunableParamsAsRunTimeParams(S) \
@@ -4678,6 +4936,15 @@ typedef enum{
      (void *)&_slTimerInfo) \
    _ssSafelyCallGenericFcnEnd; \
  }
+# define ssSetAsyncTimerResolutionEl(S, _clockTickStepSize, el)     \
+ { ssTimerInfo _slTimerInfo; \
+   _slTimerInfo.clockTickStepSize= (_clockTickStepSize); \
+   _ssSafelyCallGenericFcnStart(S) \
+   (S,GEN_FCN_SET_ASYNC_TIMER_RESOLUTION_EL,el, \
+     (void *)&_slTimerInfo) \
+   _ssSafelyCallGenericFcnEnd; \
+ }
+
 
 # define ssSetAsyncTimerDataType(S, _clockTickDataType) \
  { ssTimerInfo _slTimerInfo; \
@@ -4687,19 +4954,35 @@ typedef enum{
      (void *)&_slTimerInfo) \
    _ssSafelyCallGenericFcnEnd; \
  }
+# define ssSetAsyncTimerDataTypeEl(S, _clockTickDataType, el)      \
+ { ssTimerInfo _slTimerInfo; \
+   _slTimerInfo.clockTickDtype   = (_clockTickDataType); \
+   _ssSafelyCallGenericFcnStart(S) \
+(S,GEN_FCN_SET_ASYNC_TIMER_DATA_TYPE_EL,el, \
+     (void *)&_slTimerInfo) \
+   _ssSafelyCallGenericFcnEnd; \
+ }
 
 # define ssSetTimeSource(S, timeSource) \
    _ssSafelyCallGenericFcnStart(S) (S, \
 GEN_FCN_SET_TIME_SOURCE, timeSource, NULL) \
-   _ssSafelyCallGenericFcnEnd 
+   _ssSafelyCallGenericFcnEnd
 
+# define ssSetTimeSourceEl(S, _timeSource, el) \
+ { ssTimerInfo _slTimerInfo; \
+   _slTimerInfo.timeSource = (_timeSource); \
+   _ssSafelyCallGenericFcnStart(S) \
+   (S, GEN_FCN_SET_TIME_SOURCE_EL, el, \
+      (void *)&_slTimerInfo)\
+       _ssSafelyCallGenericFcnEnd; \
+ }
 #endif
 
 # define ssGetElapseTime(S, dataPtr) \
      _ssSafelyCallGenericFcnStart(S)(S, \
 GEN_FCN_GET_ELAPSE_TIME, 0, (double *)dataPtr) \
      _ssSafelyCallGenericFcnEnd
-         
+
 # define ssGetElapseTimeCounter(S, dataPtr) \
      _ssSafelyCallGenericFcnStart(S)(S, \
 GEN_FCN_GET_ELAPSE_TIME_COUNTER, 0, (int *)dataPtr) \
@@ -4715,12 +4998,28 @@ GEN_FCN_GET_ELAPSE_TIME_COUNTER_DTYPE, 0, (int *)dataPtr) \
 GEN_FCN_GET_ELAPSE_TIME_RESOLUTION, 0, (double *)dataPtr) \
      _ssSafelyCallGenericFcnEnd
 
-  
+#if SS_SFCN && SS_SIM
+# define ssGetTimeResolution(S, sti, dataPtr) \
+     _ssSafelyCallGenericFcnStart(S)(S, \
+GEN_FCN_GET_TIME_RESOLUTION,sti, (double *)dataPtr) \
+     _ssSafelyCallGenericFcnEnd
+#else
+# define ssGetTimeResolution(S, sti, dataPtr) \
+    ssGetTimeResolution_cannot_be_used_in_RTW
+#endif
+
 #if SS_SFCN
 # define ssSetAsyncTaskPriorities(S,width, str) \
      _ssSafelyCallGenericFcnStart(S)(S,\
 GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
      _ssSafelyCallGenericFcnEnd
+# define ssSetAsyncTaskPrioritiesEl(S,_priority, el)     \
+    { int priority = _priority; \
+     _ssSafelyCallGenericFcnStart(S)(S,  \
+GEN_FCN_SET_ASYNC_TASK_PRIORITIES_EL,el,              \
+      (void *)&(priority))                              \
+     _ssSafelyCallGenericFcnEnd; \
+    } 
 #endif
 
 #if SS_SFCN && SS_SIM
@@ -4728,7 +5027,7 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
    { int inpIdx = val; \
      _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_OUTPUT_OVERWRITE_INPUT_IDX,(pIdx),(&inpIdx))\
      _ssSafelyCallGenericFcnEnd; \
-   }     
+   }
 #endif
 #if SS_SFCN && SS_SIM
   # define ssSetZeroBasedIndexInputPort(S, pIdx) \
@@ -4772,6 +5071,21 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
   ssSetDisableFcnIsTrivial_cannot_be_used_in_RTW
 #endif
 
+/* The owner s-function block pointer. This needs to be defined before the bus support
+ * macros below as ssGetOwnerBlock is used there.
+ */
+#if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+# if !SS_SFCN_LEVEL_1
+#  define ssGetOwnerBlock(S) ((S)->blkInfo.block)
+# endif
+# if !SS_SFCN
+#  define ssSetOwnerBlock(S,block) (S)->blkInfo.block = (block)
+# else
+#  define ssSetOwnerBlock(S,block) \
+          ssSetOwnerBlock_cannot_be_used_in_SFunctions
+# endif
+#endif
+
 /*======================================================================*
  * BUS support for S-Functions
  *======================================================================*/
@@ -4784,17 +5098,17 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
  *
  * Need to set_param(gcb, 'EnableBusSupport', 'on') for the S-Function block
  *
- * 1) ssSetBusPropagationSupported(S, true) 
+ * 1) ssSetBusPropagationSupported(S, true)
  *    This indicates that bus expansion is desired.
  *
  * 2) ssSetBusSourcePort(S, portNumber)
- *    This indicates that the bus coming into port number (0-based) of the 
+ *    This indicates that the bus coming into port number (0-based) of the
  * block will supply the structure of the outgoing bus. This bus is also
- * used for getting signal names, signal propagation etc. It is the 
+ * used for getting signal names, signal propagation etc. It is the
  * defining bus for this block.
  * Example: Say for the switch block, this would be set to 0.
  *
- * 3) ssSetBusInputPorts(S, int number, int* numbers) 
+ * 3) ssSetBusInputPorts(S, int number, int* numbers)
  *    This indicates the ports of the blocks that accept buses. The bus
  * expansion routine then checks to verify that the incoming buses at these
  * inports are identical in terms of signal names and compiled attributes
@@ -4821,7 +5135,7 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
 
 /*
  * APIS for bus support via bus objects. In this case, the s-function outputs
- * a bus as defined by a bus object (which can be a parameter). The output 
+ * a bus as defined by a bus object (which can be a parameter). The output
  * function should implement the bus output consistent with the bus object.
  *
  * Need to set_param(gcb, 'EnableBusSupport', 'on') for the S-Function block
@@ -4831,10 +5145,10 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
  * specified on the dialog of the s-function block.
  *
  * 2) ssSetBusOutputObjectName(S, portNumber, busName)
- *    This specifies the bus object that defines the bus coming out of the 
+ *    This specifies the bus object that defines the bus coming out of the
  * s-function block at output number (0-based) of the block.
  *
- * 2a) ssSetBusObjectName is the obsolete name for 
+ * 2a) ssSetBusObjectName is the obsolete name for
  *     ssSetBusOutputObjectName
  *
  * 3) ssSetBusOutputAsStruct(S, portNumber, boolean_T)
@@ -4844,6 +5158,7 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
  * bus.
  */
 
+#if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
 #define ssGetSFcnParamName(S, pIdx, result) \
  _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_GET_PARAM_NAME, pIdx, (result))\
  _ssSafelyCallGenericFcnEnd
@@ -4866,6 +5181,20 @@ GEN_FCN_SET_ASYNC_TASK_PRIORITIES,width,str)\
  _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_BUS_INPUT_AS_STRUCT, pIdx, &tmp)\
  _ssSafelyCallGenericFcnEnd;\
 }
+
+#define ssSetOutputPortDiscreteValuedOutput(S, pIdx, value) \
+{  boolean_T tmp = value;\
+ _ssSafelyCallGenericFcnStart(S)((S), GEN_FCN_SET_OUTPUT_PORT_DISCRETE_VALUED_OUTPUT, pIdx, &tmp)   \
+ _ssSafelyCallGenericFcnEnd;\
+}
+#else
+#define ssGetSFcnParamName(S, pIdx, result)
+#define ssSetBusOutputObjectName(S, pIdx, name)
+#define ssSetBusObjectName(S, pIdx, name)
+#define ssSetBusOutputAsStruct(S, pIdx, value)
+#define ssSetBusInputAsStruct(S, pIdx, value)
+#define ssSetOutputPortDiscreteValuedOutput(S, pIdx, value)
+#endif
 
 /*
  * NOTE:
@@ -4910,15 +5239,59 @@ typedef void (*mdlSetInputPortBusModeFcn)(SimStruct *S,
 }
 #else
 #define ssSetInputPortBusMode(S, pIdx, value)
-#define ssSetOutputPortBusMode(S, pIdx, value) 
+#define ssSetOutputPortBusMode(S, pIdx, value)
 #endif
 #else
 #define ssSetInputPortBusMode(S, pIdx, value)
-#define ssSetOutputPortBusMode(S, pIdx, value) 
+#define ssSetOutputPortBusMode(S, pIdx, value)
 #endif
 
 /* ============================================================================
- * Variable dimensions APIs 
+ * API to identify output ports that can serve as IC source.
+ * ==========================================================================*/
+
+#if defined(RTW_GENERATED_S_FUNCTION) || SS_SL_INTERNAL
+typedef struct _ssICAttribs_tag {
+    boolean_T computeInStart;
+    boolean_T computeInFirstInitialize;
+    boolean_T computeInDisable;
+} _ssICAttribs;
+# define ssSetOutputPortICAttributes(S, pIdx, value1, value2, value3) \
+ {  _ssICAttribs val = {value1, value2, value3}; \
+    _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_OUTPUT_IC_ATTRIBUTES, pIdx, &val)\
+    _ssSafelyCallGenericFcnEnd; \
+ }
+#endif
+
+/* ============================================================================
+ * API to identify output ports whose block I/O buffer is updated in an
+ * execution context other than the root context of the model reference block.
+ * ==========================================================================*/
+
+#if defined(RTW_GENERATED_S_FUNCTION) || SS_SL_INTERNAL
+# define ssSetModelRefOutputBlkIOUpdatedInAnotherExecContext(S, pIdx, value) \
+ {  boolean_T val = value; \
+    _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_MODELREF_OUTPUT_BIO_UPDATED_IN_ANOTHER_CTX, pIdx, &val)\
+    _ssSafelyCallGenericFcnEnd; \
+ }
+#endif
+
+/* ============================================================================
+ * API to identify model reference block compiled with consistent outport
+ * initialization feature.
+ * ==========================================================================*/
+
+#if defined(RTW_GENERATED_S_FUNCTION) || SS_SL_INTERNAL
+# define ssSetModelReferenceConsistentOutportInitialization(S, value) \
+ {  boolean_T val = value; \
+    _ssSafelyCallGenericFcnStart(S)( \
+        (S), GEN_FCN_SET_MODELREF_CONSISTENT_OUTPORT_INIT, 0, &val)\
+    _ssSafelyCallGenericFcnEnd; \
+ }
+#endif
+
+/* ============================================================================
+ * Variable dimensions APIs
  * ==========================================================================*/
 
 #define ssGetInputPortDimensionsMode(S, pIdx) \
@@ -4953,6 +5326,11 @@ typedef void (*mdlSetInputPortBusModeFcn)(SimStruct *S,
 #define ssGetCurrentOutputPortDimensions(S, pIdx, dIdx) \
   (S)->blkInfo.blkInfo2->portInfo2->outputs[(pIdx)].portVarDims[(dIdx)]
 
+#define ssGetCurrentInputPortWidth(S, portIdx) \
+    _ssGetCurrentInputPortWidth(S, portIdx)
+
+#define ssGetCurrentOutputPortWidth(S, portIdx)\
+    _ssGetCurrentOutputPortWidth(S, portIdx)
 
 struct _ssVarDimsIdxVal_tag {
     int dIdx;
@@ -4960,9 +5338,9 @@ struct _ssVarDimsIdxVal_tag {
 };
 
 #if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
-#define ssSetCurrentOutputPortDimensions(S, pIdx, dIdx, val) \
+#define ssSetCurrentOutputPortDimensions(S, pIdx, _dIdx, _val) \
    {\
-    struct _ssVarDimsIdxVal_tag dIdxVal = {dIdx, val};\
+    struct _ssVarDimsIdxVal_tag dIdxVal; dIdxVal.dIdx = _dIdx; dIdxVal.dVal = _val; \
        _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_CURR_OUTPUT_DIMS, pIdx, &dIdxVal)\
        _ssSafelyCallGenericFcnEnd; \
    }
@@ -4992,12 +5370,130 @@ typedef void (*mdlSetInputPortDimensionsModeFcn)(SimStruct        *S,
   { int val = outIdx; \
      _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_INPUT_DIMS_SAMEAS_OUTPUT,(inpIdx),(&val))\
      _ssSafelyCallGenericFcnEnd; \
-  } 
+  }
 #else
 #define ssSetInputPortDimsSameAsOutputPortDims(S, inpIdx, outIdx)
 #endif
- 
-#if !SS_SFCN
+
+typedef enum {
+    SS_VARIABLE_SIZE_FROM_INPUT_SIZE = 0,       /* Output sizes only depend on input sizes */
+    SS_VARIABLE_SIZE_FROM_INPUT_VALUE_AND_SIZE  /* Output sizes depend on input values     */
+} SS_VariableSizeComputeType;
+
+#if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+#define ssSetSignalSizesComputeType(S, type) \
+  {  _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_COMP_VARSIZE_COMPUTE_TYPE,(type), 0)\
+     _ssSafelyCallGenericFcnEnd; \
+  }
+#else
+#define ssSetSignalSizesComputeType(S, type)
+#endif
+
+typedef enum {
+    SS_VARIABLE_SIZE_STATE_NO_NEED_RESET = 0,
+    SS_VARIABLE_SIZE_REQUIRE_STATE_RESET
+} SS_VariableSizeStateResetType;
+
+#define ssGetDWorkRequireResetForSignalSize(S,index) \
+    (SS_VariableSizeStateResetType)((S)->work.dWorkAux[(index)].flags.ensureResetForSizeVary)
+
+#define ssSetDWorkRequireResetForSignalSize(S,index,n) \
+    (S)->work.dWorkAux[index].flags.ensureResetForSizeVary = (unsigned int)(n)
+
+#ifndef _DIMSDEPENDINFO_T
+#define _DIMSDEPENDINFO_T
+
+/* Set the current dimension of output port outIdx based on the dims dependent rule ruleIdx */
+typedef void (*SetOutputDimsFcn)(SimStruct *S, int outIdx, int *inps, int numInps);
+/* 
+ * RTWCG function of setting the current dimension of output port outIdx based 
+ * on the dims dependent rule ruleIdx 
+ */
+typedef void (*SetOutputDimsRTWCGFcn) (SimStruct *S, void *rtwBlk, int oIdx, int*inps, int nInputs);
+
+typedef struct {
+    int              *inputs;           /* index to inputs whose dims affect the output dims*/
+    int              numInputs;         /* number of inputs affect the output dims */
+    SetOutputDimsFcn setOutputDimsFcn;  /* function to update the output dims
+                                           based on the dims of inputs*/
+    SetOutputDimsRTWCGFcn setOutputDimsRTWCGFcn;
+                                        /* RTWCG function to update output dims
+                                           based on the dims of inputs */
+} DimsDependInfo_T;
+
+#endif
+
+#if SS_SFCN_FOR_SIM
+#define ssAddOutputDimsDependencyRule(S, outIdx, ruleInfo) \
+  {  _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_ADD_DIMS_DEPEND_RULE,(outIdx),(ruleInfo))\
+     _ssSafelyCallGenericFcnEnd; \
+  }
+#else
+#define ssAddOutputDimsDependencyRule(S, outIdx, ruleInfo)
+#endif
+
+
+typedef void (*SetOutputDimsRuleFcn)(SimStruct *S, int outIdx, int ruleIdx);
+
+typedef struct {
+    int                  numRules;
+    int                  *numInpsRule;
+    int                  *inpIndices;
+    SetOutputDimsRuleFcn setOutputDimsRuleFcn;
+} MdlRefOutDimsInfo_T;
+
+typedef void (*MdlRefFinalizeDimsFcn)(SimStruct *S);
+
+typedef struct {
+    MdlRefFinalizeDimsFcn finalizeDimsFcn;
+} MdlRefFinalizeDimsInfo_T;
+
+typedef enum {
+    INPUTS_DIMS_MATCH = 0,
+    INPUTS_DISALLOW_EMPTY_SIGNAL
+} RuntimeCheckerType_T;
+
+typedef struct {
+    int _sysIdx;
+    int _blkIdx;
+    int _outIdx;
+    int _ruleIdx;
+} VarDimsAccelSetDims_T;
+
+#if SS_SFCN && SS_SIM
+
+#define ssRegMdlRefSetOutputDimsMethods(S, outIdx, ruleInfo) \
+    { _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_REG_MODELREF_SET_DIMS_DEPEND_RULES,(outIdx),(ruleInfo))\
+      _ssSafelyCallGenericFcnEnd; \
+    }
+
+#define ssRegMdlRefFinalizeDimsMethod(S, finalizeDimsFcnPtr) \
+    { MdlRefFinalizeDimsInfo_T info; \
+      info.finalizeDimsFcn = finalizeDimsFcnPtr; \
+      _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_REG_MODELREF_FINALIZE_DIMS_MTH,0,&info) \
+      _ssSafelyCallGenericFcnEnd; \
+    }
+
+#define ssAddVariableSizeSignalsRuntimeChecker(S, checker_type) \
+    { _ssSafelyCallGenericFcnStart(S)((S),     \
+                                      GEN_FCN_ADD_VARDIMS_RUNTIME_CHECKER,\
+                                      (checker_type), NULL) \
+      _ssSafelyCallGenericFcnEnd;              \
+    }
+
+#define ssCallAccelSetDims(S, sysIdx, blkIdx, outIdx, ruleIdx)   \
+    { VarDimsAccelSetDims_T accelSetDimsInfo;    \
+      accelSetDimsInfo._sysIdx  = sysIdx; \
+      accelSetDimsInfo._blkIdx  = blkIdx; \
+      accelSetDimsInfo._outIdx  = outIdx; \
+      accelSetDimsInfo._ruleIdx = ruleIdx; \
+      _ssSafelyCallGenericFcnStart(S)((S),                              \
+                                      GEN_FCN_ACCEL_CALL_SET_DIMS,      \
+                                      0, &accelSetDimsInfo)                  \
+      _ssSafelyCallGenericFcnEnd;        \
+    }
+
+#endif
 
 #define _ssGetBlkInfo2PortInfo2Ptr(S) \
    (S)->blkInfo.blkInfo2->portInfo2
@@ -5023,6 +5519,8 @@ typedef void (*mdlSetInputPortDimensionsModeFcn)(SimStruct        *S,
 #define _ssSetOutputPortVariableDimsPtr(S,pIdx,yDims) \
    (S)->blkInfo.blkInfo2->portInfo2->outputs[(pIdx)].portVarDims = (yDims)
 
+#if !SS_SFCN
+
 #define _ssSetBlockIOVarDims(S, ptr) \
    (S)->mdlInfo->blockIOVarDims = (ptr)
 
@@ -5037,10 +5535,10 @@ typedef void (*mdlSetInputPortDimensionsModeFcn)(SimStruct        *S,
 
 /*
  * Data Store API
- * 
+ *
  * This API is for internal MathWorks use only and is not intended for use
- * by user written S-functions. Accessing Data Stores is not 
- * yet supported for user written S-functions. This API WILL change in 
+ * by user written S-functions. Accessing Data Stores is not
+ * yet supported for user written S-functions. This API WILL change in
  * a future release.
  */
 
@@ -5053,7 +5551,7 @@ typedef void (*mdlSetInputPortDimensionsModeFcn)(SimStruct        *S,
 
 typedef enum {
   SS_READER_ONLY,
-  SS_WRITER_ONLY, 
+  SS_WRITER_ONLY,
   SS_READER_AND_WRITER
 } SS_ReaderOrWriter;
 
@@ -5112,9 +5610,12 @@ typedef struct {
     const char *bpath;
     void       *addr;
 } SFcnDataStoreBPathAddr;
-
 /* Structure for passing data store info into Simulink */
+
 #if SS_SFCN && SS_SIM
+/* Note that the dsmBPath must be persistent and constant
+ * i.e. inside Simulink the pointer is cached, we do not make a deep copy
+ */
 # define ssReadFromDataStoreWithPath(S, dsmIdx, dsmBPath, dataAddr) \
    {\
     SFcnDataStoreBPathAddr locPI;\
@@ -5124,7 +5625,7 @@ typedef struct {
     _ssSafelyCallGenericFcnEnd; \
    }
 # define ssReadFromDataStore(S, dsmIdx, dataAddr) \
- ssReadFromDataStoreWithPath(S, dsmIdx, ssGetPath(S), dataAddr)
+ ssReadFromDataStoreWithPath(S, dsmIdx, NULL, dataAddr)
 #endif
 
 typedef struct {
@@ -5133,6 +5634,9 @@ typedef struct {
 } SFcnDataStoreBPathConstAddr;
 
 #if SS_SFCN && SS_SIM
+/* Note that the dsmBPath must be persistent and constant
+ * i.e. inside Simulink the pointer is cached, we do not make a deep copy
+ */
 # define ssWriteToDataStoreWithPath(S, dsmIdx, dsmBPath, dataAddr) \
    {\
     SFcnDataStoreBPathConstAddr locPI;\
@@ -5142,7 +5646,7 @@ typedef struct {
     _ssSafelyCallGenericFcnEnd; \
    }
 # define ssWriteToDataStore(S, dsmIdx, dataAddr) \
- ssWriteToDataStoreWithPath(S, dsmIdx, ssGetPath(S), dataAddr)
+ ssWriteToDataStoreWithPath(S, dsmIdx, NULL, dataAddr)
 #endif
 
 /* Remember: storage is column major order if accessing element of a matrix */
@@ -5153,6 +5657,9 @@ typedef struct {
 } SFcnDataStoreBPathAddrElem;
 
 #if SS_SFCN && SS_SIM
+/* Note that the dsmBPath must be persistent and constant
+ * i.e. inside Simulink the pointer is cached, we do not make a deep copy
+ */
 # define ssReadFromDataStoreElementWithPath(S, dsmIdx, dsmBPath, dataAddr,dsmElem) \
    {\
     SFcnDataStoreBPathAddrElem locPI;\
@@ -5163,7 +5670,7 @@ typedef struct {
     _ssSafelyCallGenericFcnEnd; \
    }
 # define ssReadFromDataStoreElement(S, dsmIdx, dataAddr,dsmElem) \
- ssReadFromDataStoreElementWithPath(S, dsmIdx, ssGetPath(S), dataAddr,dsmElem)
+ ssReadFromDataStoreElementWithPath(S, dsmIdx, NULL, dataAddr,dsmElem)
 #endif
 
 typedef struct {
@@ -5173,6 +5680,9 @@ typedef struct {
 } SFcnDataStoreBPathConstAddrElem;
 
 #if SS_SFCN && SS_SIM
+/* Note that the dsmBPath must be persistent and constant
+ * i.e. inside Simulink the pointer is cached, we do not make a deep copy
+ */
 # define ssWriteToDataStoreElementWithPath(S, dsmIdx, dsmBPath, dataAddr,dsmElem) \
    {\
     SFcnDataStoreBPathConstAddrElem locPI;\
@@ -5183,7 +5693,7 @@ typedef struct {
     _ssSafelyCallGenericFcnEnd; \
    }
 # define ssWriteToDataStoreElement(S, dsmIdx, dataAddr,dsmElem) \
- ssWriteToDataStoreElementWithPath(S, dsmIdx, ssGetPath(S), dataAddr,dsmElem)
+ ssWriteToDataStoreElementWithPath(S, dsmIdx, NULL, dataAddr,dsmElem)
 #endif
 
 
@@ -5219,6 +5729,8 @@ typedef struct {
     _ssSafelyCallGenericFcnEnd; \
    }
 #endif
+/* end  Data Store API (internal Simulink use only) */
+/*============================================================================*/
 
 #if SS_SFCN && SS_SIM
 #define ssSetInputPortsNeedAddress(S, val) \
@@ -5242,6 +5754,29 @@ _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_SET_NUM_ZCSIGNALS, nZCSignals, NULL)
 #  define  ssSetNumZeroCrossingSignals(S,nZCSignals) (1)
 #endif
 
+typedef enum {
+    MDLREF_UNKNOWN = 0,
+    MDLREF_ACCEL_SIM,
+    MDLREF_NORMAL_SIM,
+    MDLREF_RTW
+} ssMdlRefType;
+
+#if SS_SFCN && SS_SIM
+# ifdef ssGetOwnerBlock
+#   define ssGetModelReferenceType(S, val) \
+    { \
+     *(val) = MDLREF_UNKNOWN; \
+     if (!((ssGetOwnerBlock(S) == NULL) && (ssGetParentSS(S) != NULL))) \
+     { \
+        _ssSafelyCallGenericFcnStart(S)(S,GEN_FCN_GET_MDLREF_TYPE, 0, val)\
+        _ssSafelyCallGenericFcnEnd; \
+     } \
+    }
+# endif
+#else
+# define ssGetModelReferenceType(S, val) \
+     ssGetModelReferenceType_cannot_be_used_in_RTW
+#endif
 
 
 /* =======================================
@@ -5269,6 +5804,10 @@ typedef enum {
     MDL_INFO_NAME_MDLREF_DWORK,
     MDL_INFO_ID_GLOBAL_RTW_CONSTRUCT,
     MDL_INFO_ID_ENUMTYPE_STRING,
+    MDL_INFO_ID_MODEL_FCN_ARGNAME,
+    MDL_INFO_ID_MODEL_FCN_NAME,
+    MDL_INFO_ID_AUTOSAR_RTE_FCN_NAME,
+    MDL_INFO_ID_RESERVED,
     NumMdlInfoType
 } MdlInfoType;
 
@@ -5276,7 +5815,7 @@ typedef enum {
 typedef struct {
     char  *id;                     /* identifier associated with info */
     MdlInfoType infoType;          /* info type                       */
-    boolean_T   extra_bool;        /* boolean value for arbitary use  */
+    boolean_T   extra_bool;        /* boolean value for arbitrary use  */
     int_T       extra_int;         /* int value for arbitrary use     */
     void        *extra_voidp;      /* pointer for arbitrary use       */
 } RegMdlInfo;
@@ -5288,15 +5827,15 @@ typedef struct {
     int        numModelInfo;  /* number of records               */
 } ModelRefMdlInfoSet;
 
-/* Structure for referenced models info. mrBlk  is NULL when this structure 
+/* Structure for referenced models info. mrBlk  is NULL when this structure
  * is registered by model reference accelerated target.
  */
 typedef struct {
     char       *name;
     char       *path;
     boolean_T  isSingleInst;
-    void       *mrBlk; 
-} MdlRefChildMdlRec; 
+    void       *mrBlk;
+} MdlRefChildMdlRec;
 
 /* Structure for referenced models solver info */
 typedef struct {
@@ -5333,6 +5872,22 @@ typedef enum {
     DISALLOW_SAMPLE_TIME_INHERITANCE
 } ModelRefTsInhRule;
 
+/*
+ * Enumerations to specify the S-Function's compliance level with the
+ * SimState save/restore feature
+ */
+typedef enum
+{
+    SIM_STATE_COMPLIANCE_INVALID = -1,
+    SIM_STATE_COMPLIANCE_UNKNOWN =  0,
+    USE_DEFAULT_SIM_STATE,
+    HAS_NO_SIM_STATE,
+    USE_CUSTOM_SIM_STATE,
+    DISALLOW_SIM_STATE
+
+} ssSimStateCompliance;
+
+
 # define ssGetOutputPortOkToMerge(S,port) \
       ((ssOkToMergeFlag)((S)->portInfo.outputs[(port)].attributes.okToMerge))
 
@@ -5354,7 +5909,7 @@ typedef enum {
           _ssSafelyCallGenericFcnEnd) return; \
    }
 # else
-#  define ssRegMdlInfo(S, id, infoType, b, i, vp) 
+#  define ssRegMdlInfo(S, id, infoType, b, i, vp)
 # endif
 #endif
 
@@ -5362,7 +5917,7 @@ typedef enum {
     SS_MDLREF_FUND_SAMPLETYPE_INFO_STR = 0,
     SS_MDLREF_FUND_SAMPLETYPE_INFO_VAL
 } _ssMdlRefFundamentalSampleTimeInfoType;
- 
+
 #if SS_SFCN && SS_SIM
 # define ssSetModelRefFundamentalSampleTimeInfo(S, fIdx, str) \
      _ssSafelyCallGenericFcnStart(S)(S,\
@@ -5373,7 +5928,7 @@ GEN_FCN_MODELREF_SET_FUNDAMENTAL_SAMPLE_TIME_INFO,(int)fIdx,(void *)str)\
      _ssSafelyCallGenericFcnStart(S)(S,\
 GEN_FCN_MODELREF_SET_TRIGGER_TS_TYPE_INFO,0,(void *)str)\
      _ssSafelyCallGenericFcnEnd
-#endif 
+#endif
 
 #if SS_SFCN && SS_SIM
 
@@ -5394,6 +5949,26 @@ _ssSafelyCallGenericFcnEnd
 #define ssSetModelRefFromFiles(S,num,str) \
 _ssSafelyCallGenericFcnStart(S)(S, GEN_FCN_SET_MODELREF_FROM_FILES, num, str)\
 _ssSafelyCallGenericFcnEnd
+
+# define ssSetModelRefInputSignalDesignMin(S,num,valPtr) \
+     _ssSafelyCallGenericFcnStart(S)(S,\
+GEN_FCN_SET_MODELREF_INPUT_SIGNAL_DESIGN_MIN,num,valPtr)\
+     _ssSafelyCallGenericFcnEnd
+
+# define ssSetModelRefInputSignalDesignMax(S,num,valPtr) \
+     _ssSafelyCallGenericFcnStart(S)(S,\
+GEN_FCN_SET_MODELREF_INPUT_SIGNAL_DESIGN_MAX,num,valPtr)\
+     _ssSafelyCallGenericFcnEnd
+
+# define ssSetModelRefOutputSignalDesignMin(S,num,valPtr) \
+     _ssSafelyCallGenericFcnStart(S)(S,\
+GEN_FCN_SET_MODELREF_OUTPUT_SIGNAL_DESIGN_MIN,num,valPtr)\
+     _ssSafelyCallGenericFcnEnd
+
+# define ssSetModelRefOutputSignalDesignMax(S,num,valPtr) \
+     _ssSafelyCallGenericFcnStart(S)(S,\
+GEN_FCN_SET_MODELREF_OUTPUT_SIGNAL_DESIGN_MAX,num,valPtr)\
+     _ssSafelyCallGenericFcnEnd
 
 # define ssSetModelRefPortRTWStorageClasses(S, str) \
      _ssSafelyCallGenericFcnStart(S)(S,\
@@ -5551,6 +6126,18 @@ USE_DEFAULT_FOR_DISCRETE_INHERITANCE
 #define ssSetModelReferenceSampleTimeDisallowInheritance(S)\
           (S)->sizes.flags.modelRefTsInhSupLevel = \
 DISALLOW_SAMPLE_TIME_INHERITANCE
+
+#define ssGetSimStateCompliance(S) \
+    ((ssSimStateCompliance)((S)->sizes.flags.simStateCompliance))
+
+#define ssSetSimStateCompliance(S, set)   \
+    (S)->sizes.flags.simStateCompliance = (set)
+
+#define ssGetSimStateVisibility(S) \
+    ((S)->sizes.flags.simStateVisibility)
+
+#define ssSetSimStateVisibility(S, vis)   \
+    (S)->sizes.flags.simStateVisibility = (vis)
 
 /*-------------------------------- S->states --------------------------------*/
 
@@ -5766,38 +6353,60 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssSetJacobianN(S,n) ssSetJacobianN_cannot_be_used_in_SFunctions
 #endif
 
+typedef enum {
+       SS_JACOBIAN_NOT_SUPPORTED=0,
+       SS_JACOBIAN_EXACT,
+       SS_JACOBIAN_CUSTOMIZED
+} SFcnJacobianType;
 
+#define _ssSetJacobianTypeAndMsg(S, type, msg)\
+{\
+    _ssSafelyCallGenericFcnStart(S)((S), GEN_FCN_SET_JACOBIAN_FLAG, type, msg)\
+        _ssSafelyCallGenericFcnEnd;\
+}
+
+#define ssSetJacobianTypeAndMsg(S, type, msg) _ssSetJacobianTypeAndMsg(S, type, msg)
+#define ssSetJacobianType(S, type) _ssSetJacobianTypeAndMsg(S, type, NULL)
+
+/* SupportRunTimeModelAPI - Runtime model API refers to the model function with
+'outputs', 'derivs' and 'update' command. If the S-function block writes to
+any persistent memory during mdlOutputs function, e.g., either dWork or a
+persistent variable, it is likely that these block may need to set this
+flag to false.
+
+Similarly, if the S-function block writes to any persistent memory other than dX
+in the mdlDerivatives, or if the S-function block writes to any persistent memory
+other than the discrete states in mdlUpdate, it is likely that this flag needs
+to be set to false.
+
+The default value for the flag is true.
+ */
+#define ssSetSupportRunTimeModelAPI(S, arg)\
+{\
+    _ssSafelyCallGenericFcnStart(S)((S), GEN_FCN_SET_SUPPORT_RUNTIME_MODEL_API,arg, NULL)\
+        _ssSafelyCallGenericFcnEnd;\
+}
 /* MassMatrix - This struct contains the MassMatrix for your S-function
  *   block.  The size of this matrix is nx x nx.
  *   All of the storage involved will be allocated automatically, provided
  *   that nzmax is set to the correct value (or a number larger than the
- *   correct value).  
+ *   correct value).
  */
 
-#define ssGetMassMatrix(S) \
-          (S)->states.modelMethods2->massMatrix     /* (_ssMassMatrixInfo *) */
-#define _ssSetMassMatrix(S,p) \
-          (S)->states.modelMethods2->massMatrix = (p)
-#if !SS_SFCN
-#define ssSetMassMatrix(S,p) _ssSetMassMatrix(S,p)
-#else
-#define ssSetMassMatrix(S,p) ssSetMassMatrix_cannot_be_used_in_SFunctions
-#endif
-
 #define ssGetMassMatrixType(S) \
-          (S)->states.modelMethods2->massMatrix->type    /*   (ssMatrixType)  */
+          (S)->states.modelMethods2->modelMethods3->massMatrix.type    /*   (ssMatrixType)  */
 #define ssSetMassMatrixType(S,t) \
-          (S)->states.modelMethods2->massMatrix->type = (t)
+          (S)->states.modelMethods2->modelMethods3->massMatrix.type = (t)
 
 #define ssGetMassMatrixNzMax(S) \
-          (S)->states.modelMethods2->massMatrix->info.nzMax   /*   (int_T)    */
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.nzMax   /*   (int_T)    */
 #define ssSetMassMatrixNzMax(S,n) \
-          (S)->states.modelMethods2->massMatrix->info.nzMax = (n)
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.nzMax = (n)
 
 #define ssGetMassMatrixIr(S) \
-          (S)->states.modelMethods2->massMatrix->info.Ir     /*   (int_T *)    */
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.Ir     /*   (int_T *)    */
 #define _ssSetMassMatrixIr(S,ir) \
-          (S)->states.modelMethods2->massMatrix->info.Ir = (ir)
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.Ir = (ir)
 #if !SS_SFCN
 #define ssSetMassMatrixIr(S,ir) _ssSetMassMatrixIr(S,ir)
 #else
@@ -5805,9 +6414,9 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #endif
 
 #define ssGetMassMatrixJc(S) \
-          (S)->states.modelMethods2->massMatrix->info.Jc     /*   (int_T *)    */
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.Jc     /*   (int_T *)    */
 #define _ssSetMassMatrixJc(S,jc) \
-          (S)->states.modelMethods2->massMatrix->info.Jc = (jc)
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.Jc = (jc)
 #if !SS_SFCN
 #define ssSetMassMatrixJc(S,jc) _ssSetMassMatrixJc(S,jc)
 #else
@@ -5815,14 +6424,58 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #endif
 
 #define ssGetMassMatrixPr(S) \
-          (S)->states.modelMethods2->massMatrix->info.Pr     /*   (real_T *)    */
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.Pr     /*   (real_T *)    */
 #define _ssSetMassMatrixPr(S,pr) \
-          (S)->states.modelMethods2->massMatrix->info.Pr = (pr)
+          (S)->states.modelMethods2->modelMethods3->massMatrix.info.Pr = (pr)
 #if !SS_SFCN
 #define ssSetMassMatrixPr(S,pr) _ssSetMassMatrixPr(S,pr)
 #else
 #define ssSetMassMatrixPr(S,pr) ssSetMassMatrix_cannot_be_used_in_SFunctions
 #endif
+
+
+/* Constraints - This struct contains the Constraints info
+ *   for your S-function block.
+ */
+#define _ssGetConstraintsInfo(S) \
+          (S)->states.modelMethods2->constraintsInfo     /* (_ssConstraintsInfo *) */
+#if !SS_SFCN
+#define ssGetConstraintsInfo(S) _ssGetConstraintsInfo(S)
+#else
+#define ssGetConstraintsInfo(S) ssGetConstraintsInfo_cannot_be_used_in_SFunctions
+#endif
+
+#define _ssSetConstraintsInfo(S,p) \
+          (S)->states.modelMethods2->constraintsInfo = (p)
+#if !SS_SFCN
+#define ssSetConstraintsInfo(S,p) _ssSetConstraintsInfo(S,p)
+#else
+#define ssSetConstraintsInfo(S,p) ssSetConstraintsInfo_cannot_be_used_in_SFunctions
+#endif
+
+#define _ssSetConstraints(S,p) \
+          (S)->states.modelMethods2->constraintsInfo->constraints = (p)
+#if !SS_SFCN
+#define ssSetConstraints(S,p) _ssSetConstraints(S,p)
+#else
+#define ssSetConstraints(S,p) ssSetConstraints_cannot_be_used_in_SFunctions
+#endif
+
+/* Thess are only used in command line model API, they do nothing in the generated code */
+/* The constraintInfo data structure is not created/present in generated code           */
+#if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
+# define ssSetNumConstraints(S,n) \
+          (S)->states.modelMethods2->constraintsInfo->numConstraints = (n)
+# define ssGetNumConstraints(S) \
+          (S)->states.modelMethods2->constraintsInfo->numConstraints    /*  (int_T)     */
+# define ssGetConstraints(S) \
+          (S)->states.modelMethods2->constraintsInfo->constraints       /*  (real_T *)  */
+#else /* RT or NRT */
+# define ssSetNumConstraints(S,n) /* do nothing */
+# define ssGetNumConstraints(S)   -1    /* silently return invalid value */
+# define ssGetConstraints(S)      NULL  /* silently return invalid value */
+#endif
+
 
 /* ContStateDisabled - This vector is of length ssGetNumContStates and
  *   is a boolean vector indicating whether or not the states in your
@@ -5900,6 +6553,9 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 
 #define ssSetModelMethods2(S,ptr) (S)->states.modelMethods2 = (ptr)
 #define ssGetModelMethods2(S) (S)->states.modelMethods2
+
+#define ssSetModelMethods3(S,ptr) ((S)->states.modelMethods2)->modelMethods3 = (ptr)
+#define ssGetModelMethods3(S) ((S)->states.modelMethods2)->modelMethods3
 
 /*
  * External Mode Function
@@ -6025,6 +6681,25 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
           ((S)->work.dWork.sfcn[(index)].dataTypeId)          /* (DTypeId) */
 #define ssSetDWorkDataType(S,index,val) \
           (S)->work.dWork.sfcn[index].dataTypeId = (val)
+
+/*
+ * Register dialog parameters indexed as prmMinIdx and prmMaxIdx as design 
+ * minimum and maximum for the DWork of index dworkIdx. 
+ */
+#define ssRegisterDWorkMinMaxPrmIndices(S,dworkIdx,prmMinIdx,prmMaxIdx) \
+    ssRegisterDataMinMaxPrmIndices((S),SS_DATA_DESC_DWORK,(dworkIdx),(prmMinIdx),(prmMaxIdx))
+
+/*
+ * Perform explicit range checking of the DWork against the associated
+ * design minimum and maximum
+ */
+#define ssCheckDWorkRange(S,dworkIdx) \
+    {                                 \
+        _ssSafelyCallGenericFcnStart(S)(S, \
+            GEN_FCN_CHECK_DWORK_RANGE, (dworkIdx), NULL) \
+        _ssSafelyCallGenericFcnEnd; \
+    }
+
 /*
  * Get the DWork complex signal.
  */
@@ -6122,6 +6797,14 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
           (S)->work.dWorkAux[index].icPrmIdxPlus1 = ((int_T) val + 1)
 
 /*
+ * Routines to allow the S-function to map a dwork to a bitfield
+ */
+#define ssGetDWorkBitFieldWidth(S,index) \
+          ((S)->work.dWorkAux[(index)].bitFieldWidth)
+#define ssSetDWorkBitFieldWidth(S,index,val) \
+          (S)->work.dWorkAux[index].bitFieldWidth = ((int_T) val)
+
+/*
  * RootDWork - For use by Simulink/RTW. User written S-Functions should not use
  *             this macro.
  *
@@ -6209,19 +6892,6 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssSetPlacementGroup(S,name) \
           (S)->blkInfo.placementGroup = (name)
 
-/* The owner s-function block pointer. */
-#if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
-# if !SS_SFCN_LEVEL_1
-#  define ssGetOwnerBlock(S) ((S)->blkInfo.block)
-# endif
-# if !SS_SFCN
-#  define ssSetOwnerBlock(S,block) (S)->blkInfo.block = (block)
-# else
-#  define ssSetOwnerBlock(S,block) \
-          ssSetOwnerBlock_cannot_be_used_in_SFunctions
-# endif
-#endif
-
 /*
  * To configure absolute tolerances for your S-function, in mdlStart
  * add the following code.  Note that absTol is not allocated for
@@ -6290,6 +6960,11 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
        _ssSafelyCallGenericFcnEnd; \
    }
 
+#define ssGetRTWCGSupport(S, result) \
+  {\
+       _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_GET_RTWCG_SUPPORT, 0,result)\
+       _ssSafelyCallGenericFcnEnd; \
+  }
 
 #define ssSetStateAttr(S, pMxa) \
   {\
@@ -6302,6 +6977,7 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
        _ssSafelyCallGenericFcnStart(S)((S),GEN_FCN_GET_STATE_ATTR,0,ppMxa)\
        _ssSafelyCallGenericFcnEnd; \
    }
+
 
 
 #if !SS_SFCN && SS_SIM
@@ -6346,7 +7022,7 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
   (ssGetSimMode(S)     == SS_SIMMODE_RTWGEN && \
    (((S)->mdlInfo->rtwgenMode == SS_RTWGEN_RTW_CODE) || \
    ((S)->mdlInfo->rtwgenMode == SS_RTWGEN_MODELREFERENCE_SIM_TARGET) || \
-   ((S)->mdlInfo->rtwgenMode == SS_RTWGEN_MODELREFERENCE_RTW_TARGET))) 
+   ((S)->mdlInfo->rtwgenMode == SS_RTWGEN_MODELREFERENCE_RTW_TARGET)))
 #else
 #define ssRTWGenIsCodeGen(S)     (false)
 #endif
@@ -6644,8 +7320,20 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
           ssClearSolverNeedsReset_cannot_be_used_in_SFunctions
 #endif
 
+#define ssIsSolverRequestingReset(S) \
+           ((S)->mdlInfo->mdlFlags.solverRequestingReset == 1U)
+#define _ssSetSolverRequestingReset(S,boolVal) \
+           (S)->mdlInfo->mdlFlags.solverRequestingReset = \
+                 ((boolVal) ? 1U : 0U)
+#if !SS_SFCN
+#define ssSetSolverRequestingReset(S,boolVal) _ssSetSolverRequestingReset(S,boolVal)
+#else
+#define ssSetSolverRequestingReset(S,boolVal) \
+          ssSetSolverRequestingReset_cannot_be_used_in_SFunctions
+#endif
+
 #define ssIsSolverCheckingCIC(S) \
-           ((S)->mdlInfo->mdlFlags.solverCheckingCIC == 1U) 
+           ((S)->mdlInfo->mdlFlags.solverCheckingCIC == 1U)
 #define _ssSetSolverCheckingCIC(S,boolVal) \
            (S)->mdlInfo->mdlFlags.solverCheckingCIC = \
                  ((boolVal) ? 1U : 0U)
@@ -6877,9 +7565,9 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #endif
 
 #define ssGetConsecutiveZCsError(S) \
-        ( (S)->mdlInfo->mdlFlags.consecutiveZCsError == 1U )
+        (ssGetSolverConsecutiveZCsError(S) == 2 )
 #define _ssSetConsecutiveZCsError(S, val) \
-        (S)->mdlInfo->mdlFlags.consecutiveZCsError = (val) ? 1U : 0U;
+        ssSetSolverConsecutiveZCsError(S, val + 1)
 #if !SS_SFCN
 #define ssSetConsecutiveZCsError(S,val) \
         _ssSetConsecutiveZCsError(S,val)
@@ -6927,7 +7615,7 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 
 #endif
 
-#if !SS_SFCN
+#if !SS_SFCN || SS_GENERATED_S_FUNCTION
 
 # define ssSetSolverInfo(S,ptr) \
          (S)->mdlInfo->solverInfo = (ptr)
@@ -6943,6 +7631,10 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
         ssGetSolverInfo(S)->zcEventsVector = (ptr)
 #define ssGetSolverZcEventsVector(S) \
         (ssGetSolverInfo(S)->zcEventsVector)
+
+#define _ssGetSolverZcEventsVector(S) ssGetSolverZcEventsVector(S)
+#define _ssSetSolverZcEventsVector(S, ptr) ssSetSolverZcEventsVector(S, ptr)
+
 
 #define ssSetSolverZcSignalAttrib(S, ptr) \
         ssGetSolverInfo(S)->zcSignalAttrib = (ptr)
@@ -6969,30 +7661,23 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssGetSolverNeedsContZcEventNotification(S) \
         (ssGetSolverInfo(S)->needsContZcEventNotification)
 
-#define ssSetSolverZcPrevSignVector(S, val) \
-        ssGetSolverInfo(S)->zcPrevSignVector = (val)
-#define ssGetSolverZcPrevSignVector(S) \
-        (ssGetSolverInfo(S)->zcPrevSignVector)
+#define ssSetSolverZcPrevStateVector(S, val) \
+        ssSetPrevZCSigState(S, val)
+#define ssGetSolverZcPrevStateVector(S) \
+        ssGetPrevZCSigState(S)
 
-#define ssSetSolverAdvancedZcDetection(S, val) \
-        ssGetSolverInfo(S)->advancedZcDetection = (val)
-#define ssGetSolverAdvancedZcDetection(S) \
-        (ssGetSolverInfo(S)->advancedZcDetection)
+#define _ssGetSolverZcPrevStateVector(S) _ssGetPrevZCSigState(S)
+#define _ssSetSolverZcPrevStateVector(S, ptr)_ssSetPrevZCSigState(S, ptr)
+
+#define ssSetSolverAdaptiveZcDetection(S, val) \
+        ssGetSolverInfo(S)->adaptiveZcDetection = (val)
+#define ssGetSolverAdaptiveZcDetection(S) \
+        (ssGetSolverInfo(S)->adaptiveZcDetection)
 
 #define ssSetSolverNumZcSignals(S, n) \
         ssGetSolverInfo(S)->numZcSignals = (n)
 #define ssGetSolverNumZcSignals(S) \
         (ssGetSolverInfo(S)->numZcSignals)
-
-#define ssSetSolverZcSignal(S, ptr) \
-        ssGetSolverInfo(S)->zcSignal = (ptr)
-#define ssGetSolverZcSignal(S) \
-        (ssGetSolverInfo(S)->zcSignal)
-
-#define ssSetSolverZcSignalDirs(S, ptr) \
-        ssGetSolverInfo(S)->zcSignalDirs = (ptr)
-#define ssGetSolverZcSignalDirs(S) \
-        (ssGetSolverInfo(S)->zcSignalDirs)
 
 #define ssSetSolverStateProjection(S, val) \
         ssGetSolverInfo(S)->stateProjection = (val)
@@ -7034,10 +7719,27 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssGetSolverRobustResetMethod(S) \
         (ssGetSolverInfo(S)->robustResetMethod)
 
+#define _ssSetSolverUpdateJacobianAtReset(S, val)                           \
+        ssGetSolverInfo(S)->updateJacobianAtReset = (val)
+#define ssSetSolverUpdateJacobianAtReset(S) \
+        _ssSetSolverUpdateJacobianAtReset(S,(boolean_T)(1))  /* sticky */
+#define ssGetSolverUpdateJacobianAtReset(S) \
+        (ssGetSolverInfo(S)->updateJacobianAtReset)  /* boolean_T */
+
+#define ssSetSolverZcThreshold(S,val) \
+        ssGetSolverInfo(S)->zcThreshold = (val)
+#define ssGetSolverZcThreshold(S) \
+        ssGetSolverInfo(S)->zcThreshold
+
+#define ssSetSolverZeroCrossAlgorithm(S,val) \
+        ssGetSolverInfo(S)->zeroCrossAlgorithm = (val)
+#define ssGetSolverZeroCrossAlgorithm(S) \
+        ssGetSolverInfo(S)->zeroCrossAlgorithm
+
 #define ssSetSolverConsecutiveZCsStepRelTol(S,val) \
-        ssGetSolverInfo(S)->solverConsecutiveZCsStepRelTol = (val) 
+        ssGetSolverInfo(S)->solverConsecutiveZCsStepRelTol = (val)
 #define ssGetSolverConsecutiveZCsStepRelTol(S) \
-        ssGetSolverInfo(S)->solverConsecutiveZCsStepRelTol 
+        ssGetSolverInfo(S)->solverConsecutiveZCsStepRelTol
 
 #define ssSetSolverMaxConsecutiveZCs(S, val) \
         ssGetSolverInfo(S)->solverMaxConsecutiveZCs = (val)
@@ -7048,6 +7750,17 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
         ssGetSolverInfo(S)->solverMaxConsecutiveMinStep = (val)
 #define ssGetSolverMaxConsecutiveMinStep(S) \
         ssGetSolverInfo(S)->solverMaxConsecutiveMinStep
+
+#define ssSetSolverShapePreserveControl(S, val) \
+        ssGetSolverInfo(S)->solverShapePreserveControl = (val)
+#define ssGetSolverShapePreserveControl(S) \
+        ssGetSolverInfo(S)->solverShapePreserveControl
+
+#define ssGetSolverConsecutiveZCsError(S) \
+        ssGetSolverInfo(S)->consecutiveZCsError
+#define ssSetSolverConsecutiveZCsError(S, val) \
+        ssGetSolverInfo(S)->consecutiveZCsError = (val)
+
 
 /* Support old name RTWSolverInfo */
 
@@ -7067,7 +7780,7 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 # define ssGetRTWLogInfo(S) \
          (S)->mdlInfo->rtwLogInfo                          /* (RTWLogInfo *)  */
 
-/* xxx - Maintained solely for XPC */
+/* Maintained for xPC */
 # define ssGetLogT(S) rtliGetLogT((S)->mdlInfo->rtwLogInfo)
 # define ssGetLogX(S) rtliGetLogX((S)->mdlInfo->rtwLogInfo)
 # define ssGetLogY(S) rtliGetLogY((S)->mdlInfo->rtwLogInfo)
@@ -7147,6 +7860,14 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssSetConstBlockIO(S,io) _ssSetConstBlockIO(S,io)
 #else
 #define ssSetConstBlockIO(S,io) ssSetConstBlockIO_cannot_be_used_in_SFunctions
+#endif
+
+#if !SS_SFCN
+# define ssGetTimeOfNextSampleHitPtr(S) \
+         ( (S)->mdlInfo->timeOfNextSampleHit )
+         
+# define ssSetTimeOfNextSampleHitPtr(S, ptr) \
+         (S)->mdlInfo->timeOfNextSampleHit = (ptr)
 #endif
 
 /* varNextHitTimesList vector - used by Simulink.
@@ -7265,7 +7986,7 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssGetContextSysRanBCPtr(S, ptr) \
    _ssSafelyCallGenericFcnStart(S) (S, \
     GEN_FCN_GET_CONTEXT_SYS_PTR, 0, (ptr)) \
-   _ssSafelyCallGenericFcnEnd 
+   _ssSafelyCallGenericFcnEnd
 #else
 #define ssGetContextSysRanBCPtr(S) \
           ssGetContextSysRanBCPtr_cannot_be_used_in_SFunctions
@@ -7275,7 +7996,7 @@ DISALLOW_SAMPLE_TIME_INHERITANCE
 #define ssGetContextSysTid(S, tid) \
    _ssSafelyCallGenericFcnStart(S) (S, \
     GEN_FCN_GET_CONTEXT_TID, 0, (tid)) \
-   _ssSafelyCallGenericFcnEnd 
+   _ssSafelyCallGenericFcnEnd
 #else
 #define ssGetContextSysTid(S) \
           ssGetContextSysTid_cannot_be_used_in_SFunctions
@@ -7394,6 +8115,8 @@ extern int_T _ssSetInputPortVectorDimension(SimStruct *S, int_T port, int_T m);
 extern int_T _ssSetOutputPortVectorDimension(SimStruct *S, int_T port, int_T m);
 extern int_T ssIsRunTimeParamTunable(SimStruct *S, const int_T rtPIdx);
 extern double ssGetSFuncBlockHandle(SimStruct *S);
+extern int_T _ssGetCurrentInputPortWidth( SimStruct *S, int_T pIdx);
+extern int_T _ssGetCurrentOutputPortWidth(SimStruct *S, int_T pIdx);
 
 #ifdef __cplusplus
 }
@@ -7862,6 +8585,28 @@ extern double ssGetSFuncBlockHandle(SimStruct *S);
 # endif
 
 # if SS_SIM
+#define dtaGetDataTypeIsBusWithVarDimsElement(dta, blockPath, id) \
+   ((dta) != NULL ? \
+   (dta)->getGenericDTAIntProp((dta)->dataTypeTable, (blockPath), (id), \
+     GEN_DTA_INT_PROP_IS_BUS_WITH_VARDIMS_ELEMENT) : \
+   -1)
+# else
+#  define dtaGetDataTypeIsBusWithVarDimsElement(dta, blockPath, id) \
+    dtaGetDataTypeIsBusWithVarDimsElement_cannot_be_used_in_RTW
+# endif
+
+# if SS_SIM
+#define dtaGetDataTypeVarDimsSize(dta, blockPath, id) \
+   ((dta) != NULL ? \
+   (dta)->getGenericDTAIntProp((dta)->dataTypeTable, (blockPath), (id), \
+     GEN_DTA_INT_PROP_VARDIMS_SIZE) : \
+   INVALID_DTYPE_SIZE)
+# else
+#  define dtaGetDataTypeVarDimsSize(dta, blockPath, id) \
+    dtaGetDataTypeVarDimsSize_cannot_be_used_in_RTW
+# endif
+
+# if SS_SIM
 #  define dtaGetDataTypeElementDataType(dta, blockPath, id, eIdx) \
    ((dta) != NULL ? \
    (dta)->getGenericDTAIntElemProp((dta)->dataTypeTable, (blockPath), (id), \
@@ -7903,6 +8648,28 @@ extern double ssGetSFuncBlockHandle(SimStruct *S);
 # else
 #  define dtaGetDataTypeElementNumDimensions(dta, blockPath, id, eIdx) \
     dtaGetDataTypeElementNumDimensions_cannot_be_used_in_RTW
+# endif
+
+# if SS_SIM
+#  define dtaGetDataTypeElementDimensionsMode(dta, blockPath, id, eIdx) \
+   ((dta) != NULL ? \
+   (dta)->getGenericDTAIntElemProp((dta)->dataTypeTable, (blockPath), (id), \
+     (eIdx), GEN_DTA_INT_PROP_ELEMENT_DIMENSIONS_MODE) : \
+   -1)
+# else
+#  define dtaGetDataTypeElementDimensionsMode(dta, blockPath, id, eIdx) \
+    dtaGetDataTypeElementDimensionsMode_cannot_be_used_in_RTW
+# endif
+
+# if SS_SIM
+#  define dtaGetDataTypeElementVarDimsOffset(dta, blockPath, id, eIdx) \
+   ((dta) != NULL ? \
+   (dta)->getGenericDTAIntElemProp((dta)->dataTypeTable, (blockPath), (id), \
+     (eIdx), GEN_DTA_INT_PROP_ELEMENT_VARDIMS_OFFSET) : \
+   -1)
+# else
+#  define dtaGetDataTypeElementVarDimsOffset(dta, blockPath, id, eIdx) \
+    dtaGetDataTypeElementVarDimsOffset_cannot_be_used_in_RTW
 # endif
 
 # if SS_SIM
@@ -7950,25 +8717,25 @@ extern double ssGetSFuncBlockHandle(SimStruct *S);
 # endif
 
 # if SS_SIM
-#define dtaGetEnumTypeGroundValue(dta, blockPath, id) \
-  ((dta) != NULL ? \
+#define dtaGetEnumTypeIndexOfDefault(dta, blockPath, id) \
+   ((dta) != NULL ? \
    (dta)->getGenericDTAIntProp((dta)->dataTypeTable, (blockPath), (id), \
-     GEN_DTA_INT_PROP_ENUMTYPE_GROUNDVALUE) : \
+     GEN_DTA_INT_PROP_ENUMTYPE_INDEX_OF_DEFAULT) : \
    -1)
 # else
-#  define dtaGetEnumTypeGroundValue(dta, blockPath, id, eIdx) \
-    dtaGetEnumTypeGroundValue_cannot_be_used_in_RTW
+#  define dtaGetEnumTypeIndexOfDefault(dta, blockPath, id) \
+    dtaGetEnumTypeIndexOfDefault_cannot_be_used_in_RTW
 # endif
 
 # if SS_SIM
-#define dtaGetEnumTypeDefaultString(dta, blockPath, id) \
-   ((dta) != NULL ? \
-   (dta)->getGenericDTAVoidProp((dta)->dataTypeTable, (blockPath), (id), \
-     GEN_DTA_VOID_PROP_ENUMTYPE_DEFAULTSTRING) : \
-   NULL)
+#define dtaGetEnumTypeAddPrefix(dta, blockPath, id) \
+  ((dta) != NULL ? \
+   (dta)->getGenericDTAIntProp((dta)->dataTypeTable, (blockPath), (id), \
+     GEN_DTA_INT_PROP_ENUMTYPE_ADD_TYPENAME_AS_PREFIX) : \
+   -1)
 # else
-#  define dtaGetEnumTypeDefaultString(dta, blockPath, id) \
-    dtaGetEnumTypeDefaultString_cannot_be_used_in_RTW
+#  define dtaGetEnumTypeAddPrefix(dta, blockPath, id) \
+    dtaGetEnumTypeAddPrefix_cannot_be_used_in_RTW
 # endif
 
 # if SS_SIM
@@ -8251,7 +9018,7 @@ extern double ssGetSFuncBlockHandle(SimStruct *S);
 
 #endif
 
-/* 
+/*
  * User-defined datatypes
  */
 
@@ -8381,7 +9148,7 @@ typedef enum {
           _ssSafelyCallGenericFcnEnd
 
 /* The term Doubles-Override is outdated and misleading.
- * Instead, the terms Data-Type-Override and Scaled-Doubles should be used 
+ * Instead, the terms Data-Type-Override and Scaled-Doubles should be used
  * as appropriate.
  * The follow definition is provided for backwards compatibility
  */
@@ -8407,10 +9174,10 @@ typedef enum {
   _ssSafelyCallGenericFcnEnd
 
 /*
- * ssExportOutputFcn, 
+ * ssExportOutputFcn,
  * ssExportEnableFcn,
  * ssExportDisableFcn -
- *   S-functions which export function calls use this in 
+ *   S-functions which export function calls use this in
  *   mdlInitializeSizes to specify the custom user functions
  *   which are exported to Simulink by means of the input ports
  *   of the S-function.
@@ -8481,50 +9248,77 @@ typedef enum {
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern int_T rt_CallSys(SimStruct *S, int_T element, int_T tid);
+    extern int_T rt_CallSys(SimStruct *S, int_T element, int_T tid);
 #ifdef __cplusplus
 }
 #endif
-# define ssCallSystemWithTid(S,element,tid) \
-           (((S)->callSys.fcns[(element)] != NULL) ? \
-           rt_CallSys((S),(element),(tid)):1)
+# define ssCallSystemWithTid(S,element,tid)          \
+    (((S)->callSys.fcns[(element)] != NULL) ?        \
+     rt_CallSys((S),(element),(tid)):1)
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern int_T rt_EnableSys(SimStruct *S, int_T element, int_T tid);
+    extern int_T rt_EnableSys(SimStruct *S, int_T element, int_T tid);
 #ifdef __cplusplus
 }
 #endif
-# define ssEnableSystemWithTid(S,element,tid) \
-           (((S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)] != NULL || \
-             (S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
-           rt_EnableSys((S),(element),(tid)):1)
+# define ssEnableSystemWithTid(S,element,tid)                           \
+    (((S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)] != NULL || \
+      (S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     rt_EnableSys((S),(element),(tid)):1)
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
+    extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
 #ifdef __cplusplus
 }
 #endif
-# define ssDisableSystemWithTid(S,element,tid) \
-           (((S)->callSys.fcns[3*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
-           rt_DisableSys((S),(element),(tid)):1)
-#else
-# define ssCallSystemWithTid(S,element,tid) \
-           (((S)->callSys.fcns[(element)] != NULL) ? \
-           (*(S)->callSys.fcns[(element)])((S)->callSys.args1[(element)], \
-           (S)->callSys.args2[(element)], (tid)):(1))
-# define ssEnableSystemWithTid(S,element,tid) \
-           (((S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
-           (*(S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)]) \
-           ((S)->callSys.args1[(element)], \
-           (S)->callSys.args2[(element)], (tid)):(1))
-# define ssDisableSystemWithTid(S,element,tid) \
-           (((S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
-           (*(S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)]) \
-           ((S)->callSys.args1[(element)], \
-           (S)->callSys.args2[(element)], (tid)):(1))
-#endif
+# define ssDisableSystemWithTid(S,element,tid)                          \
+    (((S)->callSys.fcns[3*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     rt_DisableSys((S),(element),(tid)):1)
+#else /* #if SS_RT */
+# define ssCallSystemWithTid(S,element,tid)   \
+    (((S)->callSys.fcns[(element)] != NULL) ? \
+     ((*(S)->callSys.fcns[(element)])         \
+      ((S)->callSys.args1[(element)],                   \
+       (S)->callSys.args2[(element)], (tid)) ?          \
+      (ssGetErrorStatus(S) == NULL) : (0)) : (1))
+
+#if defined(RSIM_WITH_SL_SOLVER)
+# define ssEnableSystemWithTid(S,element,tid)                           \
+    (((S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     ((*(S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)]) (     \
+         (S)->callSys.args1[(element)],                                 \
+         (S)->callSys.args2[(element)], (tid)) ?                        \
+      (ssGetErrorStatus(S) == NULL) : (0)) : (1));                      \
+    (((S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     ((*(S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)]) (   \
+         (S)->callSys.args1[(element)],                                 \
+         (S)->callSys.args2[(element)], (tid)) ?                        \
+      (ssGetErrorStatus(S) == NULL) : (0))  : (1))
+
+# define ssDisableSystemWithTid(S,element,tid)                          \
+    (((S)->callSys.fcns[3*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     ((*(S)->callSys.fcns[3*ssGetOutputPortWidth((S),0)+(element)]) (   \
+         (S)->callSys.args1[(element)],                                 \
+         (S)->callSys.args2[(element)], (tid)) ?                        \
+      (ssGetErrorStatus(S) == NULL) : (0))  : (1))
+#else /* #if defined(RSIM_WITH_SL_SOLVER) */
+# define ssEnableSystemWithTid(S,element,tid)                           \
+    (((S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     ((*(S)->callSys.fcns[ssGetOutputPortWidth((S),0)+(element)]) (     \
+         (S)->callSys.args1[(element)],                                 \
+         (S)->callSys.args2[(element)], (tid)) ?                        \
+      (ssGetErrorStatus(S) == NULL) : (0))  : (1))
+
+# define ssDisableSystemWithTid(S,element,tid)                          \
+    (((S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)] != NULL) ? \
+     ((*(S)->callSys.fcns[2*ssGetOutputPortWidth((S),0)+(element)]) (   \
+         (S)->callSys.args1[(element)],                                 \
+         (S)->callSys.args2[(element)], (tid)) ?                        \
+      (ssGetErrorStatus(S) == NULL) : (0))  : (1))
+#endif /* #if defined(RSIM_WITH_SL_SOLVER) */
+#endif /* #if SS_RT */
 
 
 /*
@@ -8989,7 +9783,8 @@ extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
           (S)->stInfo.sampleTimeTaskIDs = (tids)
 
 #define ssIsTIDInStInfo(S,tid) \
-        (((tid) < ssGetNumRootSampleTimes(S)) && \
+        (((tid) >= 0) && \
+         ((tid) < ssGetNumRootSampleTimes(S)) && \
          (ssGetSampleTimeTaskID(S,tid) < ssGetNumRootSampleTimes(S)))
 
 #if !SS_SFCN || SS_GENERATED_S_FUNCTION || defined(USE_RTMODEL)
@@ -9282,27 +10077,21 @@ extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
          (*(S)->modelMethods.sFcn.mdlRTW)(S)
 #endif
 
-# define ssGetmdlSimulationContextIO(S) \
-         ((S)->states.modelMethods2)->mdlSimulationContextIO
-# define ssSetmdlSimulationContextIO(S,simCtxIO) \
-         ((S)->states.modelMethods2)->mdlSimulationContextIO = (simCtxIO)
-# define sfcnSimulationContextIO(S,io,fp) \
-         (*((S)->states.modelMethods2)->mdlSimulationContextIO)((S),(io),(fp))
-
-
 # define ssGetmdlEnable(S) \
          ((S)->states.modelMethods2)->mdlEnable
 # define ssSetmdlEnable(S,enab) \
          ((S)->states.modelMethods2)->mdlEnable = (enab)
 # define sfcnEnable(S) \
-         (*((S)->states.modelMethods2)->mdlEnable)((S))
+         ((S)->states.modelMethods2)->mdlEnable ? \
+          (*((S)->states.modelMethods2)->mdlEnable)((S)) : (void)(S);
 
 # define ssGetmdlDisable(S) \
          ((S)->states.modelMethods2)->mdlDisable
 # define ssSetmdlDisable(S,disab) \
          ((S)->states.modelMethods2)->mdlDisable = (disab)
 # define sfcnDisable(S) \
-         (*((S)->states.modelMethods2)->mdlDisable)((S))
+         ((S)->states.modelMethods2)->mdlDisable ? \
+         (*((S)->states.modelMethods2)->mdlDisable)((S)) : (void)(S);
 
 #define ssSetmdlInitializeConditions(S,initConds) \
          (S)->modelMethods.sFcn.mdlInitializeConditions.level2 = \
@@ -9325,6 +10114,16 @@ extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
          (S)->modelMethods.sFcn.mdlStart = (start)
 #define sfcnStart(S) \
          (*(S)->modelMethods.sFcn.mdlStart)(S)
+
+#define ssSetmdlInitSystemMatrices(S,initSystemMatrices) \
+         ((S)->states.modelMethods2->modelMethods3)->\
+                      mdlInitSystemMatrices = (initSystemMatrices)
+#define ssGetmdlInitSystemMatrices(S) \
+         ((S)->states.modelMethods2->modelMethods3)->\
+                      mdlInitSystemMatrices
+#define sfcnInitSystemMatrices(S) \
+    (*(((S)->states.modelMethods2)->modelMethods3)->\
+                      mdlInitSystemMatrices) (S)
 
 #if SS_SL_INTERNAL || SS_SFCN_FOR_SIM
 # define ssGetmdlCheckParameters(S) \
@@ -9410,11 +10209,11 @@ extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
          (*((S)->states.modelMethods2)->mdlProjection) (S)
 
 #define ssSetmdlMassMatrix(S,massMatrixFcn) \
-         (((S)->states.modelMethods2)->massMatrix)->mdlMassMatrix = (massMatrixFcn)
+         ((S)->states.modelMethods2)->mdlMassMatrix = (massMatrixFcn)
 #define ssGetmdlMassMatrix(S) \
-         ((S)->states.modelMethods2)->massMatrix->mdlMassMatrix
+         ((S)->states.modelMethods2)->mdlMassMatrix
 #define sfcnMassMatrix(S) \
-         (*((S)->states.modelMethods2)->massMatrix->mdlMassMatrix) (S)
+         (*((S)->states.modelMethods2)->mdlMassMatrix) (S)
 
 #define ssSetmdlForcingFunction(S,forcingFunction) \
          ((S)->states.modelMethods2)->mdlForcingFunction = (forcingFunction)
@@ -9422,6 +10221,13 @@ extern int_T rt_DisableSys(SimStruct *S, int_T element, int_T tid);
          ((S)->states.modelMethods2)->mdlForcingFunction
 #define sfcnForcingFunction(S) \
          (*((S)->states.modelMethods2)->mdlForcingFunction) (S)
+
+#define ssSetmdlConstraints(S,constraintsFcn) \
+         (((S)->states.modelMethods2)->constraintsInfo)->mdlConstraints = (constraintsFcn)
+#define ssGetmdlConstraints(S) \
+         (((S)->states.modelMethods2)->constraintsInfo)->mdlConstraints
+#define sfcnConstraints(S) \
+         (*((S)->states.modelMethods2)->constraintsInfo->mdlConstraints) (S)
 
 #define ssSetmdlRTWCG(S,rtwcg) \
          ((S)->states.modelMethods2)->mdlRTWCG = (rtwcg)
@@ -9491,9 +10297,15 @@ typedef void (*voidFcnVoidStarType)(void*,void*);
 
 
 # define ssSetModelMassMatrix(S, fcn) \
-         (S)->states.modelMethods2->massMatrix->mdlMassMatrix = (mdlMassMatrixFcn)(fcn)
+         (S)->states.modelMethods2->mdlMassMatrix = (mdlMassMatrixFcn)(fcn)
 # define ssRunModelMassMatrix(S) \
-         (*((voidFcnVoidType)((S)->states.modelMethods2->massMatrix->mdlMassMatrix)))()
+         (*((voidFcnVoidType)((S)->states.modelMethods2->mdlMassMatrix)))()
+
+
+# define ssSetModelInitSystemMatrices(S, fcn) \
+         ((S)->states.modelMethods2->modelMethods3)->mdlInitSystemMatrices = (mdlInitSystemMatricesFcn)(fcn)
+# define ssRunModelInitSystemMatrices(S) \
+         (*((voidFcnVoidType)(((S)->states.modelMethods2)->mdlInitSystemMatrices)))()
 
 
 # define ssSetModelRTWCG(S, fcn) \
@@ -9638,7 +10450,7 @@ typedef void (*voidFcnVoidStarType)(void*,void*);
  *        if (ssIsSpecialSampleHit(S, my_sti, promoted_sti, tid)) {
  *        }
  *      }
- * 
+ *
  * Note, failure to wrap ssIsSpecialSampleHit() within ssIsSampleHit() or
  * ssIsContinuousTask will result in unexpected behavior.
  */
@@ -9655,9 +10467,22 @@ typedef void (*voidFcnVoidStarType)(void*,void*);
             ssIsSampleHit(S, my_sti, tid)
 #endif
 
-/*----------------------- ssIsFirstInitCond ---------------------------------*/
+/* --------------set/get methods for firstInitCondCalled-------------------- */
+#define _ssSetFirstInitCondCalled(S, val) \
+    (ssGetRootSS(S)->mdlInfo->mdlFlags).firstInitCondCalled = (val)
+
+#if !SS_SFCN
+#define ssSetFirstInitCondCalled(S) _ssSetFirstInitCondCalled(S, 1U)
+#define ssClearFirstInitCondCalled(S) _ssSetFirstInitCondCalled(S, 0U)
+#else
+#define ssSetFirstInitCondCalled(S) \
+        ssSetFirstInitCondCalled_cannot_be_used_in_SFunctions
+#define ssClearFirstInitCondCalled(S) \
+        ssClearFirstInitCondCalled_cannot_be_used_in_SFunctions
+#endif
+
 #define ssIsFirstInitCond(S) \
-          (ssGetT(S) == ssGetTStart(S))
+    !(ssGetRootSS(S)->mdlInfo->mdlFlags).firstInitCondCalled
 
 /*------------------------ ssPrintf, ssWarning ------------------------------*/
 #if !SS_SL_INTERNAL
@@ -9766,6 +10591,10 @@ typedef void (*voidFcnVoidStarType)(void*,void*);
  */
 #ifdef USE_RTMODEL
 # include "sfcn_bridge.h"
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif  /* __SIMSTRUC__ */

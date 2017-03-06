@@ -12,13 +12,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         garbageapp.cpp\
-        SD_jf_mg_back_stride.c\
-        SD_jf_mg_back_stride_data.c\
-        SD_jf_mg_back_stride_rti.c\
+        SD_jf_median.c\
+        SD_jf_median_data.c\
+        SD_jf_median_rti.c\
         rti_th_aux.c\
-        SD_jf_mg_back_stride_th.c\
-        SD_jf_mg_back_stride_trc_ptr.c\
-        SD_jf_mg_back_stride_data.c
+        SD_jf_median_th.c\
+        SD_jf_median_trc_ptr.c\
+        SD_jf_median_data.c
 
 
 #
@@ -31,13 +31,13 @@ SOURCES += main.cpp\
 #        defineImportedData.c
 
 HEADERS  += garbageapp.h\
-            SD_jf_mg_back_stride.h\
-            SD_jf_mg_back_stride_types.h\
+            SD_jf_median.h\
+            SD_jf_median_types.h\
             simstruc_types.h\
             simstruc.h\
             rtwtypes.h\
-            SD_jf_mg_back_stride_trc_ptr.h\
-            SD_jf_mg_back_stride_private.h
+            SD_jf_median_trc_ptr.h\
+            SD_jf_median_private.h
 
 
 #            PCG_Eval_File_1.h\

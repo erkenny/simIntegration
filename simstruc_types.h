@@ -1,7 +1,7 @@
 /*
- * Copyright 1990-2007 The MathWorks, Inc.
+ * Copyright (c) 1990-2002 The MathWorks, Inc.
  *
- * File: simstruc_types.h     $Revision: 1.1.6.1 $
+ * File: simstruc_types.h     $Revision: 1.1.6.23 $
  *
  * Abstract:
  *   The embedded RTW code formats do not include simstruc.h, but
@@ -11,6 +11,10 @@
 
 #ifndef __SIMSTRUC_TYPES_H__
 #define __SIMSTRUC_TYPES_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "tmwtypes.h"
 
@@ -102,8 +106,6 @@ struct _rtTimingBridge_tag {
 typedef enum {
     SUBSYS_DISABLED          = 0,
     SUBSYS_ENABLED           = 2,
-    SUBSYS_BECOMING_DISABLED = 4,
-    SUBSYS_BECOMING_ENABLED  = 8,
     SUBSYS_TRIGGERED         = 16
 } CondStates;
 
@@ -115,14 +117,25 @@ typedef enum {
 } ZCDirection;
 
 /* Previous state of a trigger signal */
-typedef enum {
-    NEG_ZCSIG             = -1,
-    ZERO_ZCSIG            = 0,
-    POS_ZCSIG             = 1,
-    ZERO_RISING_EV_ZCSIG  = 100, /* zero and had a rising event  */
-    ZERO_FALLING_EV_ZCSIG = 101, /* zero and had a falling event */
-    UNINITIALIZED_ZCSIG   = INT_MAX
-} ZCSigState;
+typedef uint8_T  ZCSigState;
+
+/* Initial value of a trigger zero crossing signal */
+#define    UNINITIALIZED_ZCSIG     0x03U
+#define    NEG_ZCSIG               0x02U
+#define    POS_ZCSIG               0x01U
+#define    ZERO_ZCSIG              0x00U
+  
+/* Detail zerocrossing event for removing double detection */
+#define ZC_EVENT_NUL  0x00
+#define ZC_EVENT_N2P  0x01
+#define ZC_EVENT_N2Z  0x02
+#define ZC_EVENT_Z2P  0x04
+#define ZC_EVENT_P2N  0x08
+#define ZC_EVENT_P2Z  0x10
+#define ZC_EVENT_Z2N  0x20
+#define ZC_EVENT_ALL_UP  (ZC_EVENT_N2P | ZC_EVENT_N2Z | ZC_EVENT_Z2P )
+#define ZC_EVENT_ALL_DN  (ZC_EVENT_P2N | ZC_EVENT_P2Z | ZC_EVENT_Z2N )
+#define ZC_EVENT_ALL     (ZC_EVENT_ALL_UP | ZC_EVENT_ALL_DN )
 
 /* Current state of a trigger signal */
 typedef enum {
@@ -146,6 +159,8 @@ typedef enum {
 
 #define SS_NUM_BUILT_IN_DTYPE ((int_T)SS_BOOLEAN+1)
 
+#define SS_UNDERLYING_TYPE_FOR_ENUM_DATA SS_INT32
+
 typedef enum {
     SS_FCN_CALL = 9, 
     SS_INTEGER = 10,
@@ -165,6 +180,7 @@ typedef enum {
 
 #ifndef _DTYPEID
 #  define _DTYPEID
+   /* Enumeration for MAT-file logging code */
    typedef int_T DTypeId;
 #endif
 #include "rtw_matlogging.h"
@@ -319,6 +335,11 @@ typedef struct SparseHeader_Tag {
 #ifndef RT_MALLOC
 # define ERT_CORE 1
 #endif
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* __SIMSTRUC_TYPES_H__ */
